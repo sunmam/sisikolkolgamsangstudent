@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>시시콜콜 느끼기 학생용</title>
+<title>시시콜콜 감상하기 학생용</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -430,7 +430,7 @@
 <div class="wrap">
   <header class="top">
     <div class="title-block">
-      <h1>📖 시시콜콜 느끼기 <span style="font-size:0.55em; color:var(--ink-soft); font-weight:700;">학생용</span></h1>
+      <h1>📖 시시콜콜 감상하기 <span style="font-size:0.55em; color:var(--ink-soft); font-weight:700;">학생용</span></h1>
     </div>
     <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
       <div class="mascot-chip">
@@ -515,7 +515,8 @@
       },
       step6: { theme:"", other:"" },
       step7: { question:"" },
-      step8FolderName: ""
+      step8FolderName: "",
+      step8Submitted: false
     };
   }
 
@@ -549,6 +550,7 @@
         flashSaved();
       }catch(e){ /* storage unavailable; ignore silently */ }
     }, 250);
+    scheduleAutoSubmit();
   }
   function flashSaved(){
     var dot = document.getElementById("saveDot");
@@ -637,6 +639,28 @@
   var POEM_API_URL = "https://script.google.com/macros/s/AKfycby58EUaNcIxZLkYaZOm2BRYycdCnW6RNQq0KsVqR0WWALedQv3dsRln2ppPG2sl6juL1g/exec";
   var activePoemLoaded = false;
   var activePoemError = "";
+  var submissionDeadline = ""; // ISO 문자열, 없으면 마감 없음
+
+  function deadlinePassed(){
+    return !!(submissionDeadline && new Date() > new Date(submissionDeadline));
+  }
+  function formatDeadlineDisplay(iso){
+    var d = new Date(iso);
+    var ampm = d.getHours() < 12 ? "오전" : "오후";
+    var h12 = d.getHours() % 12; if(h12===0) h12 = 12;
+    var pad = function(n){ return (n<10?"0":"")+n; };
+    return (d.getMonth()+1) + "월 " + d.getDate() + "일 " + ampm + " " + h12 + ":" + pad(d.getMinutes());
+  }
+  function fetchDeadlineForStudent(){
+    if(!poemBankAvailable()) return;
+    fetch(POEM_API_URL + "?action=getDeadline")
+      .then(function(r){ return r.json(); })
+      .then(function(res){
+        submissionDeadline = (res && res.deadline) || "";
+        if(state.currentStep === STEPS.length-1) renderStep();
+      })
+      .catch(function(){ /* offline — keep last-known value */ });
+  }
 
   function poemBankAvailable(){
     return !!(POEM_API_URL && POEM_API_URL.indexOf("http") === 0);
@@ -679,6 +703,7 @@
       state.step4 = fresh.step4;
       state.step6 = fresh.step6;
       state.step7 = fresh.step7;
+      state.step8Submitted = fresh.step8Submitted;
       state.currentStep = 0;
       changed = true;
     } else if(!newId && state.poem.linkedId){
@@ -1480,19 +1505,30 @@
     });
     card.appendChild(confBlock);
 
+    var deadlineOver = deadlinePassed();
+    if(submissionDeadline){
+      card.appendChild(el("div", {
+        class:"field-hint",
+        style:"font-weight:700; color:" + (deadlineOver ? "var(--danger)" : "var(--accent3)") + ";",
+        html: deadlineOver ? "⏰ 제출 기한이 지났어요 (" + formatDeadlineDisplay(submissionDeadline) + " 마감)" : "⏰ 제출 기한: " + formatDeadlineDisplay(submissionDeadline) + "까지"
+      }));
+    }
+
     var folderRow = el("div", {class:"fill-blank-row"});
     folderRow.appendChild(textNode("선생님의 ("));
     var folderInput = el("input", {type:"text", placeholder:"폴더 이름"});
     folderInput.style.width = "130px";
     folderInput.value = state.step8FolderName || "";
+    folderInput.disabled = deadlineOver;
     folderInput.addEventListener("input", function(){ state.step8FolderName = this.value; save(); });
     folderRow.appendChild(folderInput);
     folderRow.appendChild(textNode(") 폴더로"));
     var submitBtn = el("button", {type:"button", class:"print-btn", style:"margin-top:0;", html:"📤 제출하기"});
-    submitBtn.addEventListener("click", function(){ submitReportToTeacher(sheet, scores); });
+    submitBtn.disabled = deadlineOver;
+    submitBtn.addEventListener("click", function(){ submitReportToTeacher(false); });
     folderRow.appendChild(submitBtn);
     card.appendChild(folderRow);
-    card.appendChild(el("div", {class:"field-hint", id:"submitStatus", style:"margin-top:8px;"}));
+    card.appendChild(el("div", {class:"field-hint", id:"submitStatus", style:"margin-top:8px;", html: state.step8Submitted ? "이미 제출했어요 — 마감 전까지는 내용을 고치면 자동으로 반영돼요." : ""}));
   }
 
   function setSubmitStatus(text){
@@ -1500,27 +1536,67 @@
     if(el2) el2.textContent = text;
   }
 
-  // 학생이 STEP8에서 완성한 보고서를 공유 백엔드(같은 구글 시트, submissions
-  // 탭)로 보냅니다. 같은 학번+시로 다시 누르면 새 행이 또 쌓이지 않고
-  // 기존 제출 내용을 덮어써서(업서트) 선생님은 항상 최신본만 보게 됩니다.
-  function buildReportPlainText(sheetEl, scores){
+  // STEP8 렌더링과 무관하게(다른 단계에서 자동 제출할 때도) 항상 같은
+  // 내용을 만들 수 있도록, 화면에 그린 <p> 태그를 긁어오는 대신 상태값에서
+  // 직접 보고서 텍스트를 다시 만듭니다. renderStep8의 HTML 버전과 문구를
+  // 맞춰뒀습니다 — 문구를 바꿀 땐 두 곳을 같이 고쳐주세요.
+  function buildReportPlainLines(){
+    var emotions = getSelectedEmotions();
+    var intensityText = describeIntensities(emotions);
+    var items = state.step4.items.filter(function(it){ return (it.text||"").trim(); });
+    function v(val, ph){ var has = val && String(val).trim().length>0; return has ? val : ph; }
+
     var lines = [];
-    sheetEl.querySelectorAll("p").forEach(function(p){ lines.push(p.textContent); });
+    lines.push("작품명: " + v(state.poem.title,"____") + "   작가명: " + v(state.poem.author,"____"));
+
+    if(emotions.length){
+      emotions.forEach(function(item){ lines.push("나는 이 시에서 " + v(item.label,"____") + " 정서를 느꼈다."); });
+    } else {
+      lines.push("나는 이 시에서 " + v("","____") + " 정서를 느꼈다.");
+    }
+
+    lines.push("이 시에서 느낀 정서별 강도는 " + v(intensityText,"________") + "이다.");
+    lines.push("이 시의 시적 화자는 " + v(state.step3.answer,"________________") + ".");
+
+    if(items.length){
+      items.forEach(function(it){
+        lines.push("특히 내가 의미 있거나 미적 느낌을 받고 감탄한 시어·시구는 " + v(it.text,"____________") + "이다. 그 이유는 " + v(it.reason,"____________") + "이다.");
+      });
+    } else {
+      lines.push("특히 내가 의미 있거나 미적 느낌을 받고 감탄한 시어·시구는 " + v("","____________") + "이다. 그 이유는 " + v("","____________") + "이다.");
+    }
+
+    lines.push("나는 이 시가 " + v(state.step6.theme,"________________") + "에 대해 이야기한다고 생각한다.");
+    lines.push("다른 시각으로 보면 " + v(state.step6.other,"________________") + "라고도 볼 수 있다.");
+    lines.push("이 시와 관련해서 더 나누고 싶은 질문은, " + v(state.step7.question,"________________") + "이다.");
+    return lines;
+  }
+
+  function buildReportPlainText(scores){
+    var lines = buildReportPlainLines();
     lines.push("");
     lines.push("[나의 감상 완성도]");
     scores.forEach(function(s){ lines.push(s.label + ": " + s.value + "% — " + s.reason); });
     return lines.join("\n");
   }
 
-  function submitReportToTeacher(sheetEl, scores){
+  // 학생이 STEP8에서 "제출하기"를 누르거나(수동), 이미 한 번 제출한 뒤 마감
+  // 전에 내용을 고쳐서(자동) 호출됩니다. 같은 학번+시로 다시 제출하면 새
+  // 행이 쌓이지 않고 기존 내용을 덮어써서 선생님은 항상 최신본만 보게 됩니다.
+  function submitReportToTeacher(isAuto){
     if(!poemBankAvailable()){
-      showAlert("제출 기능을 쓰려면 이 파일의 POEM_API_URL이 설정되어 있어야 해요.");
+      if(!isAuto) showAlert("제출 기능을 쓰려면 이 파일의 POEM_API_URL이 설정되어 있어야 해요.");
       return;
     }
     if(!(state.student && state.student.studentId)){
-      showAlert("학번 정보가 없어요. 처음 화면에서 학번을 입력해주세요.");
+      if(!isAuto) showAlert("학번 정보가 없어요. 처음 화면에서 학번을 입력해주세요.");
       return;
     }
+    if(deadlinePassed()){
+      if(!isAuto) showAlert("제출 기한이 지나서 제출할 수 없어요.");
+      return;
+    }
+    var scores = computeConfidence();
     var payload = {
       action: "submitReport",
       studentId: state.student.studentId,
@@ -1530,24 +1606,43 @@
       poemTitle: state.poem.title,
       poemAuthor: state.poem.author,
       folderName: (state.step8FolderName||"").trim(),
-      reportText: buildReportPlainText(sheetEl, scores),
+      reportText: buildReportPlainText(scores),
       scoresJson: JSON.stringify(scores)
     };
-    setSubmitStatus("제출하는 중...");
+    setSubmitStatus(isAuto ? "자동으로 반영하는 중..." : "제출하는 중...");
     fetch(POEM_API_URL, {
       method: "POST",
       headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify(payload)
     }).then(function(r){ return r.json(); }).then(function(json){
       if(json && json.error) throw new Error(json.error);
+      // Persist directly (not via save()) — save() re-arms the auto-submit
+      // timer, and since nothing actually changed here, that would fire
+      // another submit in 2s, whose own success handler would do the same
+      // again, forever. Writing to storage directly breaks that loop.
+      state.step8Submitted = true;
+      try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){ /* ignore */ }
       var now = new Date();
       var hh = now.getHours(), mm = now.getMinutes();
       var ampm = hh < 12 ? "오전" : "오후";
       var h12 = hh % 12; if(h12===0) h12 = 12;
-      setSubmitStatus("✅ 선생님께 제출했어요! (" + ampm + " " + h12 + ":" + (mm<10?"0"+mm:mm) + ")");
+      var timeStr = ampm + " " + h12 + ":" + (mm<10?"0"+mm:mm);
+      setSubmitStatus(isAuto ? ("🔄 수정 내용이 자동으로 반영됐어요 (" + timeStr + ")") : ("✅ 선생님께 제출했어요! (" + timeStr + ")"));
     }).catch(function(err){
-      setSubmitStatus("❌ 제출에 실패했어요: " + ((err && err.message) || "네트워크 연결을 확인해주세요."));
+      setSubmitStatus("❌ " + (isAuto ? "자동 반영에 실패했어요: " : "제출에 실패했어요: ") + ((err && err.message) || "네트워크 연결을 확인해주세요."));
     });
+  }
+
+  // 한 번이라도 수동 제출을 한 뒤에는, 마감 전까지 어떤 입력이든 바뀌면
+  // (STEP1~8 아무 단계에서나) 잠시 후 자동으로 다시 제출해 선생님 쪽 사본을
+  // 최신 상태로 맞춥니다. save()마다 호출되므로 타이핑 중에는 계속 미뤄지다가
+  // 입력이 멈추고 나서 한 번만 실행됩니다.
+  var autoSubmitTimer = null;
+  function scheduleAutoSubmit(){
+    if(!state.step8Submitted) return;
+    if(deadlinePassed()) return;
+    clearTimeout(autoSubmitTimer);
+    autoSubmitTimer = setTimeout(function(){ submitReportToTeacher(true); }, 2000);
   }
 
   function describeIntensities(items){
@@ -1621,6 +1716,7 @@
   /* ---------------- init ---------------- */
   renderAll();
   fetchActivePoemForStudent();
+  fetchDeadlineForStudent();
 })();
 </script>
 </body>
