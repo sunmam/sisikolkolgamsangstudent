@@ -504,7 +504,7 @@
       studentName: "",
       student: { studentId:"", realName:"", nickname:"", character: CHARACTERS[0] },
       poem: { title:"", author:"", text:"", linkedId:"" },
-      step1: { recited:false, method:"", audioUrl:"" },
+      step1: { recited:false, method:"" },
       step2: {
         selected:[], otherLabel:"", otherChecked:false,
         graph:{}
@@ -1027,13 +1027,6 @@
       panel.appendChild(el("div", {class:"mic-status", html: recording ? "🔴 녹음 중... 시를 소리 내어 읽어 주세요. 다 읽었으면 버튼을 다시 눌러 녹음을 마쳐주세요." : "마이크 연결 중..."}));
     } else if(state.step1.recited && state.step1.method === "recorded"){
       panel.appendChild(el("div", {class:"mic-status", html:"✅ 낭송 완료! 아래에서 다시 들어볼 수 있어요."}));
-      if(recUploadStatus === "uploading"){
-        panel.appendChild(el("div", {class:"field-hint", html:"☁️ 선생님이 들을 수 있도록 녹음을 서버에 저장하는 중..."}));
-      } else if(recUploadStatus === "done"){
-        panel.appendChild(el("div", {class:"field-hint", html:"✅ 녹음이 서버에 저장됐어요. 선생님 화면에서 들을 수 있어요."}));
-      } else if(recUploadStatus){
-        panel.appendChild(el("div", {class:"field-hint", style:"color:var(--danger);", html:"⚠️ 녹음 서버 저장 실패: " + esc(recUploadStatus) + " (제출할 때 다시 시도해요)"}));
-      }
       if(audioURL){
         var playBtn = el("button", {type:"button", class:"add-btn", html:"▶ 낭송 들어보기"});
         var audioEl = el("audio", {controls:"controls", style:"width:100%; margin-top:10px; display:none;"});
@@ -1092,8 +1085,6 @@
   var mediaChunks = [];
   var mediaStream = null;
   var audioURL = null;
-  var audioBlob = null; // 녹음 직후 업로드용으로 잠깐 들고 있는 파일 데이터 (제출 실패 시 대비용 백업)
-  var recUploadStatus = ""; // "", "uploading", "done", 또는 실패 사유 문자열 — STEP1 화면에 그대로 보여줌
   var recording = false;
   var micConnecting = false;
   var recErrorMessage = "";
@@ -1171,17 +1162,13 @@
       }
       if(audioURL) URL.revokeObjectURL(audioURL);
       audioURL = blob.size > 0 ? URL.createObjectURL(blob) : null;
-      audioBlob = blob.size > 0 ? blob : null;
       if(mediaStream){ mediaStream.getTracks().forEach(function(t){ t.stop(); }); mediaStream = null; }
       recording = false;
       state.step1.recited = !!audioURL;
       state.step1.method = audioURL ? "recorded" : "";
-      state.step1.audioUrl = "";
-      recUploadStatus = "";
       save();
       renderStep();
       renderDoors();
-      if(audioBlob) uploadRecordingNow(audioBlob);
     };
     try{
       mediaRecorder.start();
@@ -1202,64 +1189,12 @@
 
   function discardSession(){
     if(audioURL){ URL.revokeObjectURL(audioURL); audioURL = null; }
-    audioBlob = null;
-    recUploadStatus = "";
     state.step1.recited = false;
     state.step1.method = "";
-    state.step1.audioUrl = "";
     recErrorMessage = "";
     save();
     renderStep();
     renderDoors();
-  }
-
-  // 녹음이 끝나자마자(제출을 누르기 전이라도) 바로 서버(구글 드라이브)에
-  // 올려서 링크를 받아둡니다. 녹음 파일(Blob)은 페이지를 새로고침하면
-  // 사라지므로, 나중에 제출할 때까지 기다리면 그 사이 새로고침이나 다른
-  // 세션 전환이 있을 경우 녹음이 통째로 유실될 수 있기 때문입니다.
-  function uploadRecordingNow(blob){
-    if(!poemBankAvailable()) return;
-    recUploadStatus = "uploading";
-    renderStep();
-    var reader = new FileReader();
-    reader.onloadend = function(){
-      var base64 = String(reader.result||"").split(",")[1] || "";
-      if(!base64){
-        if(audioBlob === blob){ recUploadStatus = "녹음 파일을 읽지 못했어요."; renderStep(); }
-        return;
-      }
-      fetch(POEM_API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({
-          action: "uploadRecording",
-          studentId: (state.student && state.student.studentId) || "",
-          poemTitle: state.poem.title,
-          audioBase64: base64,
-          audioMimeType: blob.type || "audio/webm"
-        })
-      }).then(function(r){ return r.json(); }).then(function(json){
-        if(json && json.error) throw new Error(json.error);
-        if(audioBlob === blob){ // 그 사이 재녹음했다면 새 녹음의 링크로 덮어쓰지 않음
-          state.step1.audioUrl = (json && json.audioUrl) || "";
-          recUploadStatus = state.step1.audioUrl ? "done" : "서버에서 링크를 받지 못했어요.";
-          save();
-          renderStep();
-        }
-      }).catch(function(err){
-        // 업로드에 실패해도 로컬 재생(들어보기)은 그대로 가능하고, 제출 시
-        // 파일 자체를 다시 올려보는 여지를 남깁니다. 다만 실패 사유는 화면에
-        // 보여줘서, 계속 실패한다면 원인을 파악할 수 있게 합니다.
-        if(audioBlob === blob){
-          recUploadStatus = (err && err.message) || "네트워크 연결을 확인해주세요.";
-          renderStep();
-        }
-      });
-    };
-    reader.onerror = function(){
-      if(audioBlob === blob){ recUploadStatus = "녹음 파일을 읽지 못했어요."; renderStep(); }
-    };
-    reader.readAsDataURL(blob);
   }
 
   function autoGrow(ta){
@@ -1686,51 +1621,28 @@
       scoresJson: JSON.stringify(scores)
     };
 
-    // 녹음이 끝나면 곧바로 업로드해두므로(uploadRecordingNow), 보통은 이미
-    // 받아둔 링크(state.step1.audioUrl)만 함께 보내면 됩니다. 혹시 그 업로드가
-    // 아직 끝나지 않은 채로 제출을 누른 경우를 대비해, 링크가 없는데 녹음
-    // 파일은 남아있다면 이번에는 파일 자체를 함께 올립니다.
-    var needsInlineAudio = !!(audioBlob && !state.step1.audioUrl);
-    if(state.step1.audioUrl) payload.audioUrl = state.step1.audioUrl;
-
-    function sendPayload(){
-      setSubmitStatus(isAuto ? "자동으로 반영하는 중..." : (needsInlineAudio ? "제출하는 중... (녹음 파일도 함께 올려요)" : "제출하는 중..."));
-      fetch(POEM_API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify(payload)
-      }).then(function(r){ return r.json(); }).then(function(json){
-        if(json && json.error) throw new Error(json.error);
-        // Persist directly (not via save()) — save() re-arms the auto-submit
-        // timer, and since nothing actually changed here, that would fire
-        // another submit in 2s, whose own success handler would do the same
-        // again, forever. Writing to storage directly breaks that loop.
-        state.step8Submitted = true;
-        try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){ /* ignore */ }
-        var now = new Date();
-        var hh = now.getHours(), mm = now.getMinutes();
-        var ampm = hh < 12 ? "오전" : "오후";
-        var h12 = hh % 12; if(h12===0) h12 = 12;
-        var timeStr = ampm + " " + h12 + ":" + (mm<10?"0"+mm:mm);
-        setSubmitStatus(isAuto ? ("🔄 수정 내용이 자동으로 반영됐어요 (" + timeStr + ")") : ("✅ 선생님께 제출했어요! (" + timeStr + ")"));
-      }).catch(function(err){
-        setSubmitStatus("❌ " + (isAuto ? "자동 반영에 실패했어요: " : "제출에 실패했어요: ") + ((err && err.message) || "네트워크 연결을 확인해주세요."));
-      });
-    }
-
-    if(needsInlineAudio){
-      var reader = new FileReader();
-      reader.onloadend = function(){
-        var base64 = String(reader.result||"").split(",")[1] || "";
-        payload.audioBase64 = base64;
-        payload.audioMimeType = audioBlob.type || "audio/webm";
-        sendPayload();
-      };
-      reader.onerror = function(){ sendPayload(); }; // 인코딩 실패해도 텍스트 제출은 계속 진행
-      reader.readAsDataURL(audioBlob);
-    } else {
-      sendPayload();
-    }
+    setSubmitStatus(isAuto ? "자동으로 반영하는 중..." : "제출하는 중...");
+    fetch(POEM_API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(payload)
+    }).then(function(r){ return r.json(); }).then(function(json){
+      if(json && json.error) throw new Error(json.error);
+      // Persist directly (not via save()) — save() re-arms the auto-submit
+      // timer, and since nothing actually changed here, that would fire
+      // another submit in 2s, whose own success handler would do the same
+      // again, forever. Writing to storage directly breaks that loop.
+      state.step8Submitted = true;
+      try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){ /* ignore */ }
+      var now = new Date();
+      var hh = now.getHours(), mm = now.getMinutes();
+      var ampm = hh < 12 ? "오전" : "오후";
+      var h12 = hh % 12; if(h12===0) h12 = 12;
+      var timeStr = ampm + " " + h12 + ":" + (mm<10?"0"+mm:mm);
+      setSubmitStatus(isAuto ? ("🔄 수정 내용이 자동으로 반영됐어요 (" + timeStr + ")") : ("✅ 선생님께 제출했어요! (" + timeStr + ")"));
+    }).catch(function(err){
+      setSubmitStatus("❌ " + (isAuto ? "자동 반영에 실패했어요: " : "제출에 실패했어요: ") + ((err && err.message) || "네트워크 연결을 확인해주세요."));
+    });
   }
 
   // 한 번이라도 수동 제출을 한 뒤에는, 마감 전까지 어떤 입력이든 바뀌면
