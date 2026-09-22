@@ -504,7 +504,7 @@
       studentName: "",
       student: { studentId:"", realName:"", nickname:"", character: CHARACTERS[0] },
       poem: { title:"", author:"", text:"", linkedId:"" },
-      step1: { recited:false, method:"" },
+      step1: { recited:false, method:"", audioUrl:"" },
       step2: {
         selected:[], otherLabel:"", otherChecked:false,
         graph:{}
@@ -1023,7 +1023,7 @@
       stopBtn.title = "낭송 종료";
       stopBtn.addEventListener("click", function(){ stopRecitation(); });
       panel.appendChild(stopBtn);
-      panel.appendChild(el("div", {class:"mic-status", html: recording ? "🔴 녹음 중... 시를 소리 내어 읽어 주세요." : "마이크 연결 중..."}));
+      panel.appendChild(el("div", {class:"mic-status", html: recording ? "🔴 녹음 중... 시를 소리 내어 읽어 주세요. 다 읽었으면 버튼을 다시 눌러 녹음을 마쳐주세요." : "마이크 연결 중..."}));
     } else if(state.step1.recited && state.step1.method === "recorded"){
       panel.appendChild(el("div", {class:"mic-status", html:"✅ 낭송 완료! 아래에서 다시 들어볼 수 있어요."}));
       if(audioURL){
@@ -1084,8 +1084,7 @@
   var mediaChunks = [];
   var mediaStream = null;
   var audioURL = null;
-  var audioBlob = null; // 실제 파일 데이터 — 제출할 때 서버로 올리는 데 씀
-  var audioUploadedForCurrentRecording = false;
+  var audioBlob = null; // 녹음 직후 업로드용으로 잠깐 들고 있는 파일 데이터 (제출 실패 시 대비용 백업)
   var recording = false;
   var micConnecting = false;
   var recErrorMessage = "";
@@ -1164,14 +1163,15 @@
       if(audioURL) URL.revokeObjectURL(audioURL);
       audioURL = blob.size > 0 ? URL.createObjectURL(blob) : null;
       audioBlob = blob.size > 0 ? blob : null;
-      audioUploadedForCurrentRecording = false; // 새 녹음이니 다음 제출 때 같이 올려야 함
       if(mediaStream){ mediaStream.getTracks().forEach(function(t){ t.stop(); }); mediaStream = null; }
       recording = false;
       state.step1.recited = !!audioURL;
       state.step1.method = audioURL ? "recorded" : "";
+      state.step1.audioUrl = "";
       save();
       renderStep();
       renderDoors();
+      if(audioBlob) uploadRecordingNow(audioBlob);
     };
     try{
       mediaRecorder.start();
@@ -1193,13 +1193,47 @@
   function discardSession(){
     if(audioURL){ URL.revokeObjectURL(audioURL); audioURL = null; }
     audioBlob = null;
-    audioUploadedForCurrentRecording = false;
     state.step1.recited = false;
     state.step1.method = "";
+    state.step1.audioUrl = "";
     recErrorMessage = "";
     save();
     renderStep();
     renderDoors();
+  }
+
+  // 녹음이 끝나자마자(제출을 누르기 전이라도) 바로 서버(구글 드라이브)에
+  // 올려서 링크를 받아둡니다. 녹음 파일(Blob)은 페이지를 새로고침하면
+  // 사라지므로, 나중에 제출할 때까지 기다리면 그 사이 새로고침이나 다른
+  // 세션 전환이 있을 경우 녹음이 통째로 유실될 수 있기 때문입니다.
+  function uploadRecordingNow(blob){
+    if(!poemBankAvailable()) return;
+    var reader = new FileReader();
+    reader.onloadend = function(){
+      var base64 = String(reader.result||"").split(",")[1] || "";
+      if(!base64) return;
+      fetch(POEM_API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({
+          action: "uploadRecording",
+          studentId: (state.student && state.student.studentId) || "",
+          poemTitle: state.poem.title,
+          audioBase64: base64,
+          audioMimeType: blob.type || "audio/webm"
+        })
+      }).then(function(r){ return r.json(); }).then(function(json){
+        if(json && json.error) throw new Error(json.error);
+        if(audioBlob === blob){ // 그 사이 재녹음했다면 새 녹음의 링크로 덮어쓰지 않음
+          state.step1.audioUrl = (json && json.audioUrl) || "";
+          save();
+        }
+      }).catch(function(){
+        // 업로드에 실패해도 로컬 재생(들어보기)은 그대로 가능하고, 제출 시
+        // 다시 시도할 수 있는 여지를 남기기 위해 조용히 넘어갑니다.
+      });
+    };
+    reader.readAsDataURL(blob);
   }
 
   function autoGrow(ta){
@@ -1367,7 +1401,7 @@
     card.appendChild(guide("시 속에서 말하고 있는 사람은 누구일까요? 그 사람이 처한 상황과 하고 있는 행동을 함께 생각해보세요."));
     var block = el("div", {class:"field-block"});
     block.appendChild(el("label", {class:"field-label", html:"시적 화자는 어떤 상황에서 어떤 행동을 하나요?"}));
-    var ta = el("textarea", {class:"tall", placeholder:"예: 화자는 고향을 떠난 사람으로, 밤하늘의 별을 보며 그리움을 느끼고 있다..."});
+    var ta = el("textarea", {class:"tall", placeholder:"예: 고향을 떠난 사람으로, 밤하늘의 별을 보며 그리움을 느끼고 있다..."});
     ta.value = state.step3.answer;
     ta.addEventListener("input", function(){ state.step3.answer = this.value; save(); renderDoors(); });
     block.appendChild(ta);
@@ -1494,7 +1528,7 @@
     }
 
     lines.push("<p>나는 이 시가 " + b(state.step6.theme, "________________") + "에 대해 이야기한다고 생각한다.</p>");
-    lines.push("<p>다른 시각으로 보면 " + b(state.step6.other, "________________") + "라고도 볼 수 있다.</p>");
+    lines.push("<p>다른 시각으로 보면 " + b(state.step6.other, "________________") + "(이)라고도 볼 수 있다.</p>");
     lines.push("<p>이 시와 관련해서 더 나누고 싶은 질문은, " + b(state.step7.question, "________________") + "이다.</p>");
 
     var sheet = el("div", {class:"report-sheet"});
@@ -1583,7 +1617,7 @@
     }
 
     lines.push("나는 이 시가 " + v(state.step6.theme,"________________") + "에 대해 이야기한다고 생각한다.");
-    lines.push("다른 시각으로 보면 " + v(state.step6.other,"________________") + "라고도 볼 수 있다.");
+    lines.push("다른 시각으로 보면 " + v(state.step6.other,"________________") + "(이)라고도 볼 수 있다.");
     lines.push("이 시와 관련해서 더 나누고 싶은 질문은, " + v(state.step7.question,"________________") + "이다.");
     return lines;
   }
@@ -1626,17 +1660,21 @@
       scoresJson: JSON.stringify(scores)
     };
 
-    var includingAudio = !!(audioBlob && !audioUploadedForCurrentRecording);
+    // 녹음이 끝나면 곧바로 업로드해두므로(uploadRecordingNow), 보통은 이미
+    // 받아둔 링크(state.step1.audioUrl)만 함께 보내면 됩니다. 혹시 그 업로드가
+    // 아직 끝나지 않은 채로 제출을 누른 경우를 대비해, 링크가 없는데 녹음
+    // 파일은 남아있다면 이번에는 파일 자체를 함께 올립니다.
+    var needsInlineAudio = !!(audioBlob && !state.step1.audioUrl);
+    if(state.step1.audioUrl) payload.audioUrl = state.step1.audioUrl;
 
     function sendPayload(){
-      setSubmitStatus(isAuto ? "자동으로 반영하는 중..." : (includingAudio ? "제출하는 중... (녹음 파일도 함께 올려요)" : "제출하는 중..."));
+      setSubmitStatus(isAuto ? "자동으로 반영하는 중..." : (needsInlineAudio ? "제출하는 중... (녹음 파일도 함께 올려요)" : "제출하는 중..."));
       fetch(POEM_API_URL, {
         method: "POST",
         headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify(payload)
       }).then(function(r){ return r.json(); }).then(function(json){
         if(json && json.error) throw new Error(json.error);
-        if(includingAudio) audioUploadedForCurrentRecording = true;
         // Persist directly (not via save()) — save() re-arms the auto-submit
         // timer, and since nothing actually changed here, that would fire
         // another submit in 2s, whose own success handler would do the same
@@ -1654,7 +1692,7 @@
       });
     }
 
-    if(includingAudio){
+    if(needsInlineAudio){
       var reader = new FileReader();
       reader.onloadend = function(){
         var base64 = String(reader.result||"").split(",")[1] || "";
