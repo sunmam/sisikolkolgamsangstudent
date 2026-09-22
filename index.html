@@ -1,0 +1,1627 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>시시콜콜 느끼기 학생용</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    color-scheme: light;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+
+    --bg: #fff8ef;
+    --bg-soft: #fff1de;
+    --card: #ffffff;
+    --ink: #3a2e26;
+    --ink-soft: #7a6a5c;
+    --line: #f0ddc4;
+    --accent: #ff7a59;
+    --accent-ink: #ffffff;
+    --accent2: #7c5cff;
+    --accent3: #2ec4b6;
+    --accent4: #ffb703;
+    --danger: #e5484d;
+    --door-wood: #c98a4b;
+    --door-wood-dark: #a8672f;
+    --door-frame: #6b4226;
+    --shadow: 0 8px 24px rgba(120, 80, 40, 0.12);
+    --radius: 18px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg: #211a15;
+      --bg-soft: #2a221b;
+      --card: #2c241d;
+      --ink: #f3e9df;
+      --ink-soft: #c3b3a2;
+      --line: #45392c;
+      --accent: #ff8a68;
+      --accent-ink: #241209;
+      --accent2: #9d86ff;
+      --accent3: #4fd9cb;
+      --accent4: #ffca4d;
+      --danger: #ff6b70;
+      --door-wood: #8a5a30;
+      --door-wood-dark: #63400f;
+      --door-frame: #3c2a1c;
+      --shadow: 0 8px 24px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg: #211a15;
+    --bg-soft: #2a221b;
+    --card: #2c241d;
+    --ink: #f3e9df;
+    --ink-soft: #c3b3a2;
+    --line: #45392c;
+    --accent: #ff8a68;
+    --accent-ink: #241209;
+    --accent2: #9d86ff;
+    --accent3: #4fd9cb;
+    --accent4: #ffca4d;
+    --danger: #ff6b70;
+    --door-wood: #8a5a30;
+    --door-wood-dark: #63400f;
+    --door-frame: #3c2a1c;
+    --shadow: 0 8px 24px rgba(0,0,0,0.35);
+  }
+
+  *{ box-sizing: border-box; }
+  button{ touch-action: manipulation; }
+  body{
+    margin:0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Noto Sans KR', sans-serif;
+    padding: 0 16px 40px;
+  }
+  img{ max-width:100%; }
+  [hidden]{ display:none !important; }
+
+  h1,h2,h3{ font-family: 'Gowun Dodum', 'Noto Sans KR', sans-serif; margin: 0; }
+
+  .wrap{ max-width: 880px; margin: 0 auto; }
+
+  /* ---------- Header ---------- */
+  header.top{
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 10px 4px 6px;
+    gap: 10px; flex-wrap: wrap;
+  }
+  .title-block{ display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; }
+  .title-block h1{ font-size: 20px; color: var(--accent); letter-spacing: 0.5px; }
+  .mascot-chip{ display:flex; align-items:center; gap:6px; }
+  .mascot-sprite{
+    display: inline-block;
+    font-size: 22px;
+    line-height: 1;
+  }
+  .mascot-sprite.bounce{ animation: bounce 0.55s ease; }
+  @keyframes bounce{
+    0%{ transform: translateY(0) scaleX(1); }
+    30%{ transform: translateY(-8px) scaleX(-1); }
+    60%{ transform: translateY(-1px) scaleX(-1); }
+    100%{ transform: translateY(0) scaleX(1); }
+  }
+  .nameplate{
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    background: var(--ink);
+    color: var(--bg);
+    border: none;
+    border-radius: 999px;
+    padding: 5px 12px;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+  .nameplate:hover{ filter: brightness(1.15); }
+  .save-indicator{
+    font-size: 12px; color: var(--ink-soft);
+    display:flex; align-items:center; gap:6px;
+    background: var(--card); border:1px solid var(--line);
+    padding: 6px 12px; border-radius: 999px; box-shadow: var(--shadow);
+    white-space: nowrap;
+  }
+  .save-indicator .dot{ width:8px; height:8px; border-radius:50%; background: var(--accent3); flex:none; }
+  .reset-btn{
+    font-size: 12px; color: var(--ink-soft); background: transparent; border: 1px solid var(--line);
+    border-radius: 999px; padding: 6px 12px; cursor: pointer;
+  }
+  .reset-btn:hover{ background: var(--bg-soft); }
+
+  /* ---------- Compact step bar ---------- */
+  .stepbar{
+    background: var(--bg-soft); border: 1px solid var(--line); border-radius: 14px;
+    padding: 8px 12px 9px; margin-bottom: 12px;
+  }
+  .stepbar-top{ display:flex; align-items:baseline; justify-content:space-between; gap:8px; }
+  .stepbar-label{ font-size: 13.5px; font-weight: 700; color: var(--ink); }
+  .stepbar-count{ font-size: 12px; color: var(--ink-soft); white-space: nowrap; }
+  .stepdots-wrap{ position: relative; margin-top: 22px; }
+  .stepbar-mascot{
+    position: absolute; top: -22px; left: 0; z-index: 2;
+    transform: translateX(-50%);
+    font-size: 19px; line-height: 1; pointer-events: none;
+    transition: left 0.5s cubic-bezier(.5,-0.2,.4,1.3), top 0.3s ease;
+  }
+  .stepbar-mascot.bounce{ animation: bounce 0.55s ease; }
+  .stepdots{ display:flex; flex-wrap:wrap; gap:5px; }
+  .stepdot{
+    position: relative;
+    display:flex; align-items:center; gap:5px;
+    border: 1.5px solid var(--line); border-radius: 9px;
+    background: var(--card); cursor:pointer; font-family: inherit;
+    padding: 4px 8px 4px 5px; transition: all 0.15s;
+  }
+  .stepdot-door{ width: 13px; height: 17px; flex: none; overflow: visible; }
+  .stepdot-door-frame{ fill: var(--door-frame); }
+  .stepdot-door-panel{
+    fill: var(--door-wood); transition: transform 0.25s, fill 0.25s;
+    transform-origin: 3.5px 9px; transform-box: fill-box;
+  }
+  .stepdot-door-knob{ fill: #ffe9b0; }
+  .stepdot-check{
+    position:absolute; top:-5px; right:-5px; width:14px; height:14px; border-radius:50%;
+    background: var(--accent3); color:#fff; font-size:9px; font-weight:700;
+    display:flex; align-items:center; justify-content:center; line-height:1;
+  }
+  .stepdot-label{ font-size: 10.5px; color: var(--ink-soft); font-weight: 600; white-space: nowrap; }
+  .stepdot.done{ border-color: var(--accent3); }
+  .stepdot.done .stepdot-door-panel{ fill: var(--accent3); }
+  .stepdot.done .stepdot-label{ color: var(--accent3); }
+  .stepdot.active{ border-color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, transparent); }
+  .stepdot.active .stepdot-label{ color: var(--accent); font-weight: 700; }
+  .stepdot.active .stepdot-door-panel{ transform: rotateY(-35deg); fill: var(--accent4); }
+
+  .progress-track{
+    height: 6px; background: var(--line); border-radius: 999px; margin-top: 10px; overflow: hidden;
+  }
+  .progress-fill{
+    height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent4));
+    border-radius: 999px; transition: width 0.4s ease;
+  }
+
+  /* ---------- Step Card ---------- */
+  .card{
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 14px 16px 16px;
+    animation: doorOpen 0.4s ease;
+  }
+  @keyframes doorOpen{
+    from{ opacity: 0; transform: scale(0.97) translateY(6px); }
+    to{ opacity: 1; transform: scale(1) translateY(0); }
+  }
+  .step-head{ margin-bottom: 6px; }
+  .step-kicker{
+    display:inline-block; font-size: 12px; font-weight: 700; color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
+    padding: 3px 10px; border-radius: 999px; margin-bottom: 8px;
+  }
+  .step-title{ font-size: 19px; margin-bottom: 3px; }
+  .step-guide{
+    font-size: 12.5px; color: var(--ink-soft); line-height: 1.45;
+    background: var(--bg-soft); border-left: 3px solid var(--accent3);
+    padding: 7px 11px; border-radius: 8px; margin: 6px 0 12px;
+  }
+  .field-block{ margin-bottom: 12px; }
+  .setup-screen{ max-width: 480px; margin: 10px auto 0; }
+  .character-grid{ display: flex; flex-wrap: wrap; gap: 10px; }
+  .character-btn{
+    width: 56px; height: 56px; border-radius: 14px; border: 2px solid var(--line);
+    background: var(--bg); font-size: 28px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; transition: all .15s;
+  }
+  .character-btn:hover{ transform: translateY(-2px); }
+  .character-btn.selected{
+    border-color: var(--accent); background: color-mix(in srgb, var(--accent) 16%, transparent);
+    transform: scale(1.08);
+  }
+  .field-label{ font-weight: 700; font-size: 14.5px; margin-bottom: 8px; display:block; }
+  .field-hint{ font-size: 12.5px; color: var(--ink-soft); margin: -4px 0 8px; }
+
+  textarea, input[type="text"]{
+    width: 100%; border: 1.5px solid var(--line); border-radius: 10px;
+    padding: 10px 12px; font-family: inherit; font-size: 14px; color: var(--ink);
+    background: var(--bg); resize: vertical;
+  }
+  textarea:focus, input[type="text"]:focus{ outline: none; border-color: var(--accent); }
+  textarea.grow{ min-height: 70px; }
+  textarea.tall{ min-height: 120px; }
+
+
+  .checkbox-grid{
+    display: flex; flex-wrap: wrap; gap: 5px;
+  }
+  .chip{
+    display: inline-flex; align-items: center; gap: 5px;
+    border: 1.5px solid var(--line); border-radius: 999px;
+    padding: 5px 11px; font-size: 13px; cursor: pointer;
+    background: var(--bg); user-select: none; transition: all 0.15s;
+  }
+  .chip input{ display:none; }
+  .chip.checked{
+    background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 700;
+  }
+  .chip .other-input{
+    display:none; border: none; background: transparent; color: inherit; font-size: 13.5px;
+    width: 70px; padding: 0; font-family: inherit;
+  }
+  .chip.checked .other-input{ display:inline-block; }
+  .chip.checked.other .other-input::placeholder{ color: var(--accent-ink); opacity: 0.7; }
+
+  .quote-box{
+    margin-top: 12px; padding: 12px; border-radius: 10px;
+    background: var(--bg-soft); border: 1px dashed var(--line);
+  }
+  .quote-box .qb-label{ font-size: 13px; font-weight: 700; margin-bottom: 6px; display:flex; align-items:center; gap:6px; }
+  .quote-box .qb-label .swatch{ width:10px; height:10px; border-radius:3px; background:var(--accent); }
+
+  /* graph */
+  .graph-wrap{ margin-top: 8px; }
+  .graph-empty{ font-size: 13px; color: var(--ink-soft); font-style: italic; }
+  .graph-grid{
+    position: relative;
+    display: grid;
+    grid-auto-flow: column;
+    gap: 4px;
+    padding: 10px 8px 0;
+    background: var(--bg-soft); border-radius: 12px;
+  }
+  .graph-col{ display:flex; flex-direction:column; align-items:center; gap:6px; }
+  .graph-levels{ display:flex; flex-direction:column; gap:6px; }
+  .graph-dot{
+    width: 26px; height: 26px; border-radius: 50%;
+    border: 2px solid var(--accent2); background: var(--card);
+    cursor: pointer; position: relative; z-index: 2;
+  }
+  .graph-dot.on{ background: var(--accent2); }
+  .graph-axis-label{ font-size: 12px; font-weight: 700; color: var(--ink); padding: 6px 0 10px; text-align:center; }
+  .graph-svg{ position:absolute; inset:0; pointer-events:none; z-index:1; }
+  .graph-side{ display:flex; flex-direction:column; justify-content:space-between; padding: 0 0 34px; }
+  .graph-side span{ font-size: 10px; color: var(--ink-soft); }
+
+  .set-row{
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+    margin-bottom: 10px; align-items: start;
+  }
+  .set-row.two-col{ grid-template-columns: 1fr 1fr; }
+  @media (max-width: 560px){
+    .set-row, .set-row.two-col{ grid-template-columns: 1fr; }
+  }
+  .set-row input, .set-row textarea{ font-size: 13.5px; }
+  .add-btn{
+    display: inline-flex; align-items:center; gap:6px;
+    background: none; border: 1.5px dashed var(--accent2); color: var(--accent2);
+    border-radius: 10px; padding: 8px 14px; font-size: 13px; font-weight: 700; cursor: pointer;
+    margin-top: 4px;
+  }
+  .add-btn:hover{ background: color-mix(in srgb, var(--accent2) 10%, transparent); }
+  .remove-x{
+    background:none; border:none; color: var(--danger); cursor:pointer; font-size: 16px; padding: 4px 6px;
+  }
+  .set-card{
+    border: 1px solid var(--line); border-radius: 10px; padding: 10px; margin-bottom: 8px; background: var(--bg);
+  }
+  .set-card-top{ display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px; }
+  .set-card-top span{ font-size: 12px; font-weight: 700; color: var(--ink-soft); }
+
+  .fill-blank-row{ display:flex; align-items:center; flex-wrap:wrap; gap: 6px; font-size: 15px; line-height: 2.2; }
+  .fill-blank-row input{
+    border: none; border-bottom: 2.5px solid var(--accent); background: transparent;
+    text-align:center; font-weight: 700; color: var(--accent); font-size: 15px; padding: 2px 4px;
+    width: 60px;
+  }
+
+  /* read-only poem display (student app: 선생님이 배포한 시를 그대로 보여주기만 함) */
+  .poem-display{
+    border: 1.5px solid var(--line); border-radius: 12px; padding: 14px 16px;
+    background: var(--bg-soft);
+  }
+  .poem-display-title{ font-weight: 700; font-size: 16px; margin-bottom: 2px; }
+  .poem-display-author{ font-size: 12.5px; color: var(--ink-soft); margin-bottom: 10px; }
+  .poem-display-text{ font-size: 14.5px; line-height: 1.9; white-space: pre-wrap; }
+
+  /* mic */
+  .mic-panel{
+    border: 1.5px solid var(--line); border-radius: 12px; padding: 16px; text-align:center;
+    background: var(--bg-soft);
+  }
+  .mic-btn{
+    width: 74px; height: 74px; border-radius: 50%; border: none; cursor: pointer;
+    background: var(--accent); color: var(--accent-ink); font-size: 30px;
+    box-shadow: 0 4px 14px rgba(255,122,89,0.4);
+    transition: transform 0.15s;
+  }
+  .mic-btn:active{ transform: scale(0.94); }
+  .mic-btn.recording{ background: var(--danger); animation: pulse 1.2s infinite; }
+  @keyframes pulse{
+    0%{ box-shadow: 0 0 0 0 rgba(229,72,77,0.5); }
+    70%{ box-shadow: 0 0 0 16px rgba(229,72,77,0); }
+    100%{ box-shadow: 0 0 0 0 rgba(229,72,77,0); }
+  }
+  .mic-status{ font-size: 13px; color: var(--ink-soft); margin-top: 10px; min-height: 18px; }
+  .manual-fallback{ margin-top: 14px; font-size: 12.5px; }
+  .manual-fallback button{
+    background: none; border: 1px solid var(--line); border-radius: 999px; padding: 9px 14px;
+    cursor: pointer; color: var(--ink-soft); font-size: 12.5px; line-height: 1.5;
+  }
+  .recited-badge{
+    display:inline-flex; align-items:center; gap:6px; color: var(--accent3); font-weight:700; font-size: 13px; margin-top: 10px;
+  }
+
+  /* footer nav */
+  .foot-nav{
+    display:flex; justify-content: space-between; align-items:center; margin-top: 14px; gap: 10px;
+  }
+  .nav-btn{
+    border: none; border-radius: 12px; padding: 12px 20px; font-weight: 700; font-size: 14px; cursor: pointer;
+    font-family: inherit;
+  }
+  .nav-btn.prev{ background: var(--bg-soft); color: var(--ink); border: 1px solid var(--line); }
+  .nav-btn:disabled{ opacity: 0.4; cursor: not-allowed; }
+  .nav-hint{ font-size: 12px; color: var(--ink-soft); }
+
+  .door-next{
+    display:flex; align-items:center; gap:8px; border:none; cursor:pointer;
+    background: var(--accent); color: var(--accent-ink); border-radius: 12px;
+    padding: 7px 16px 7px 8px; font-family: inherit;
+  }
+  .door-next-svg{ width:32px; height:32px; flex:none; overflow: visible; }
+  .door-next-frame{ fill: var(--door-frame); }
+  .door-next-panel{
+    fill: var(--door-wood); transition: transform 0.35s ease, fill 0.35s ease;
+    transform-origin: 9px 28px; transform-box: fill-box;
+  }
+  .door-next-knob{ fill: #ffe9b0; transition: opacity 0.2s; }
+  .door-next-label{ font-weight: 700; font-size: 14px; }
+  .door-next.opening .door-next-panel{ transform: rotateY(-100deg); fill: var(--door-wood-dark); }
+  .door-next.opening .door-next-knob{ opacity: 0; }
+  .door-next:disabled{ opacity: 0.6; cursor: not-allowed; }
+
+  /* report */
+  .report-sheet{
+    border: 2px solid var(--ink); border-radius: 14px; padding: 22px; background: var(--card);
+    font-size: 14.5px; line-height: 2.1;
+  }
+  .report-sheet h3{ text-align:center; font-size: 18px; margin-bottom: 4px; }
+  .report-divider{ border: none; border-top: 2px solid var(--ink); margin: 10px 0; }
+  .blank{ color: var(--accent); font-weight: 700; border-bottom: 1.5px dashed var(--accent); padding: 0 2px; }
+  .blank.empty{ color: var(--ink-soft); font-weight: 400; }
+
+  .conf-row{ display:grid; grid-template-columns: 110px 1fr 42px; align-items:center; gap: 10px; margin-bottom: 8px; }
+  .conf-row .conf-label{ font-size: 12.5px; color: var(--ink-soft); }
+  .conf-bar{ height: 14px; background: var(--line); border-radius: 999px; overflow: hidden; }
+  .conf-fill{ height:100%; border-radius: 999px; background: linear-gradient(90deg, var(--accent3), var(--accent2)); transition: width 0.6s ease; }
+  .conf-pct{ font-size: 12px; font-weight: 700; text-align:right; }
+  .conf-reason{ font-size: 11.5px; color: var(--ink-soft); margin: -4px 0 10px 2px; }
+
+  .print-btn{
+    margin-top: 16px; background: var(--accent2); color:#fff; border:none; border-radius: 10px;
+    padding: 10px 16px; font-weight:700; cursor:pointer; font-size: 13px;
+  }
+  .modal-overlay{
+    position: fixed; inset: 0; background: rgba(30, 20, 10, 0.45);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100; padding: 20px;
+  }
+  .modal-box{
+    background: var(--card); border-radius: 16px; padding: 20px;
+    max-width: 320px; width: 100%; box-shadow: var(--shadow);
+    border: 1px solid var(--line);
+  }
+  .modal-box input[type="text"]{ width: 100%; }
+
+  @media print{
+    header.top, .stepbar, .foot-nav, .print-btn, .step-guide, .reset-btn{ display:none !important; }
+    body{ padding:0; }
+    .card{ box-shadow:none; border:none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="title-block">
+      <h1>📖 시시콜콜 느끼기 <span style="font-size:0.55em; color:var(--ink-soft); font-weight:700;">학생용</span></h1>
+    </div>
+    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+      <div class="mascot-chip">
+        <span class="mascot-sprite" id="mascotSprite">🦊</span>
+        <button type="button" class="nameplate" id="nameplate" title="이름 바꾸기">콜콜이</button>
+      </div>
+      <div class="save-indicator"><span class="dot" id="saveDot"></span><span id="saveText">자동 저장됨</span></div>
+      <button class="reset-btn" id="resetBtn" type="button">🔄 새 시로 시작</button>
+    </div>
+  </header>
+
+  <div class="setup-screen" id="setupScreen" hidden></div>
+
+  <div class="stepbar" id="stepbar">
+    <div class="stepbar-top">
+      <span class="stepbar-label" id="stepbarLabel">STEP 1 · 시 낭송하기</span>
+      <span class="stepbar-count" id="stepbarCount">1 / 8</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="stepdots-wrap" id="stepDotsWrap">
+      <span class="stepbar-mascot" id="stepbarMascot">🦊</span>
+      <div class="stepdots" id="stepDots"></div>
+    </div>
+  </div>
+
+  <main class="card" id="stepCard"></main>
+
+  <div class="modal-overlay" id="modalOverlay" hidden>
+    <div class="modal-box" id="modalBox"></div>
+  </div>
+
+  <div class="foot-nav">
+    <button class="nav-btn prev" id="prevBtn" type="button">◀ 이전 단계</button>
+    <button type="button" class="door-next" id="nextBtn">
+      <svg class="door-next-svg" viewBox="0 0 56 56">
+        <rect class="door-next-frame" x="4" y="3" width="48" height="50" rx="5"></rect>
+        <rect class="door-next-panel" x="9" y="7" width="38" height="42" rx="3"></rect>
+        <circle class="door-next-knob" cx="17" cy="29" r="2.4"></circle>
+      </svg>
+      <span class="door-next-label" id="nextLabel">다음 문 열기</span>
+    </button>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var STORAGE_KEY = "sisikolkol_state_v1";
+
+  var STEPS = [
+    { key:"step1", label:"낭송",   title:"시 낭송하기",        kicker:"STEP 1" },
+    { key:"step2", label:"정서",   title:"시의 정서와 분위기",  kicker:"STEP 2" },
+    { key:"step3", label:"화자",   title:"시적 화자",          kicker:"STEP 3" },
+    { key:"step4", label:"시어",   title:"시어(시구) 탐구",     kicker:"STEP 4" },
+    { key:"step6", label:"주제",   title:"주제와 의미 해석",    kicker:"STEP 5" },
+    { key:"step7", label:"질문",   title:"더 나누고 싶은 이야기", kicker:"STEP 6" },
+    { key:"step8", label:"보고서", title:"나의 시 감상 보고서", kicker:"STEP 7" }
+  ];
+
+  var EMOTIONS = ["기쁨","희망","사랑","예찬","평온","관조","그리움","놀라움","외로움","상실",
+    "슬픔","회한","정한","불안","위기감","두려움","체념","절망","자조","냉소","분노","허무",
+    "비판","풍자","자기성찰","자기연민"];
+
+  var CHARACTERS = ["🦊","🐰","🐻","🐱","🐶","🦁","🐼","🐨"];
+
+  function defaultState(){
+    return {
+      currentStep: 0,
+      studentSetupDone: false,
+      studentName: "",
+      student: { studentId:"", realName:"", nickname:"", character: CHARACTERS[0] },
+      poem: { title:"", author:"", text:"", linkedId:"" },
+      step1: { recited:false, method:"" },
+      step2: {
+        selected:[], otherLabel:"", otherChecked:false,
+        graph:{}
+      },
+      step3: { answer:"" },
+      step4: {
+        items:[ {text:"",reason:""} ]
+      },
+      step6: { theme:"", other:"" },
+      step7: { question:"" },
+      step8FolderName: ""
+    };
+  }
+
+  var state = loadState();
+
+  function loadState(){
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return defaultState();
+      var parsed = JSON.parse(raw);
+      var d = defaultState();
+      return Object.assign(d, parsed, {
+        student: Object.assign(d.student, parsed.student||{}),
+        poem: Object.assign(d.poem, parsed.poem||{}),
+        step1: Object.assign(d.step1, parsed.step1||{}),
+        step2: Object.assign(d.step2, parsed.step2||{}),
+        step3: Object.assign(d.step3, parsed.step3||{}),
+        step4: Object.assign(d.step4, parsed.step4||{}),
+        step6: Object.assign(d.step6, parsed.step6||{}),
+        step7: Object.assign(d.step7, parsed.step7||{})
+      });
+    }catch(e){ return defaultState(); }
+  }
+
+  var saveTimer = null;
+  function save(){
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(function(){
+      try{
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        flashSaved();
+      }catch(e){ /* storage unavailable; ignore silently */ }
+    }, 250);
+  }
+  function flashSaved(){
+    var dot = document.getElementById("saveDot");
+    var txt = document.getElementById("saveText");
+    var now = new Date();
+    var hh = now.getHours(), mm = now.getMinutes();
+    var ampm = hh < 12 ? "오전" : "오후";
+    var h12 = hh % 12; if(h12===0) h12 = 12;
+    txt.textContent = "저장됨 · " + ampm + " " + h12 + ":" + (mm<10?"0"+mm:mm);
+    dot.style.background = "var(--accent4)";
+    setTimeout(function(){ dot.style.background = "var(--accent3)"; }, 400);
+  }
+
+  function el(tag, attrs, children){
+    var e = document.createElement(tag);
+    attrs = attrs || {};
+    for(var k in attrs){
+      if(k === "class") e.className = attrs[k];
+      else if(k === "html") e.innerHTML = attrs[k];
+      else if(k.indexOf("on") === 0) e.addEventListener(k.slice(2), attrs[k]);
+      else e.setAttribute(k, attrs[k]);
+    }
+    (children||[]).forEach(function(c){ if(c) e.appendChild(c); });
+    return e;
+  }
+  function textNode(t){ return document.createTextNode(t); }
+
+  /* ---------------- Custom modal (native alert/confirm/prompt are not
+     available inside the published artifact sandbox) ---------------- */
+  var modalOverlay = document.getElementById("modalOverlay");
+  var modalBox = document.getElementById("modalBox");
+  modalOverlay.addEventListener("click", function(e){
+    if(e.target === modalOverlay) closeModal();
+  });
+  function closeModal(){
+    modalOverlay.hidden = true;
+    modalBox.innerHTML = "";
+  }
+  function openModal(){ modalOverlay.hidden = false; }
+
+  function showAlert(message){
+    modalBox.innerHTML = "";
+    modalBox.appendChild(el("p", {style:"margin:0 0 16px; font-size:14px; line-height:1.6;", html: esc(message)}));
+    var btn = el("button", {type:"button", class:"nav-btn next", style:"width:100%;", html:"확인"});
+    btn.addEventListener("click", closeModal);
+    modalBox.appendChild(btn);
+    openModal();
+  }
+
+  function showConfirm(message, onYes){
+    modalBox.innerHTML = "";
+    modalBox.appendChild(el("p", {style:"margin:0 0 16px; font-size:14px; line-height:1.6;", html: esc(message)}));
+    var row = el("div", {style:"display:flex; gap:8px;"});
+    var cancelBtn = el("button", {type:"button", class:"nav-btn prev", style:"flex:1;", html:"취소"});
+    var okBtn = el("button", {type:"button", class:"nav-btn next", style:"flex:1;", html:"확인"});
+    cancelBtn.addEventListener("click", closeModal);
+    okBtn.addEventListener("click", function(){ closeModal(); onYes(); });
+    row.appendChild(cancelBtn); row.appendChild(okBtn);
+    modalBox.appendChild(row);
+    openModal();
+  }
+
+  function showPrompt(message, defVal, onSubmit){
+    modalBox.innerHTML = "";
+    modalBox.appendChild(el("p", {style:"margin:0 0 10px; font-size:14px; line-height:1.6;", html: esc(message)}));
+    var input = el("input", {type:"text", style:"margin-bottom:14px;"});
+    input.value = defVal || "";
+    modalBox.appendChild(input);
+    var row = el("div", {style:"display:flex; gap:8px;"});
+    var cancelBtn = el("button", {type:"button", class:"nav-btn prev", style:"flex:1;", html:"취소"});
+    var okBtn = el("button", {type:"button", class:"nav-btn next", style:"flex:1;", html:"확인"});
+    cancelBtn.addEventListener("click", closeModal);
+    okBtn.addEventListener("click", function(){ var v = input.value; closeModal(); onSubmit(v); });
+    input.addEventListener("keydown", function(e){ if(e.key === "Enter"){ okBtn.click(); } });
+    row.appendChild(cancelBtn); row.appendChild(okBtn);
+    modalBox.appendChild(row);
+    openModal();
+    setTimeout(function(){ input.focus(); }, 30);
+  }
+
+  /* ---------------- Active poem (읽기 전용, Google Apps Script JSON API) ----------------
+     The student app never registers or picks a poem itself — it only ever
+     asks the teacher app's Apps Script backend "what's the current poem?"
+     over a plain fetch() GET (no CORS preflight). Whatever the teacher last
+     broadcast there is what every student sees. */
+  var POEM_API_URL = "https://script.google.com/macros/s/AKfycby58EUaNcIxZLkYaZOm2BRYycdCnW6RNQq0KsVqR0WWALedQv3dsRln2ppPG2sl6juL1g/exec";
+  var activePoemLoaded = false;
+  var activePoemError = "";
+
+  function poemBankAvailable(){
+    return !!(POEM_API_URL && POEM_API_URL.indexOf("http") === 0);
+  }
+
+  function fetchActivePoemForStudent(){
+    if(!poemBankAvailable()){
+      activePoemLoaded = true;
+      activePoemError = "시 연동 주소(POEM_API_URL)가 설정되어 있지 않아요. 선생님께 문의해주세요.";
+      if(state.currentStep === 0) renderStep();
+      return;
+    }
+    fetch(POEM_API_URL + "?action=current")
+      .then(function(r){ return r.json(); })
+      .then(function(poem){
+        activePoemLoaded = true;
+        activePoemError = "";
+        applyActivePoem(poem);
+      })
+      .catch(function(){
+        activePoemLoaded = true;
+        activePoemError = "시를 불러오지 못했어요. 인터넷 연결을 확인하고 새로고침 해주세요.";
+        if(state.currentStep === 0) renderStep();
+      });
+  }
+
+  // A different id than what's already saved means the teacher switched to a
+  // new poem since this student last visited. Start that poem's analysis
+  // fresh (STEP1~8 reset) but keep the student's own profile (학번/이름/캐릭터)
+  // so the same "학생 카드" carries across every poem the class works through.
+  function applyActivePoem(poem){
+    var newId = (poem && poem.id) || "";
+    var changed = false;
+    if(newId && newId !== state.poem.linkedId){
+      var fresh = defaultState();
+      state.poem = { title: poem.title||"", author: poem.author||"", text: poem.text||"", linkedId: newId };
+      state.step1 = fresh.step1;
+      state.step2 = fresh.step2;
+      state.step3 = fresh.step3;
+      state.step4 = fresh.step4;
+      state.step6 = fresh.step6;
+      state.step7 = fresh.step7;
+      state.currentStep = 0;
+      changed = true;
+    } else if(!newId && state.poem.linkedId){
+      state.poem = { title:"", author:"", text:"", linkedId:"" };
+      changed = true;
+    }
+    if(changed) save();
+    // Only force a re-render if the student is already past the setup screen —
+    // rebuilding mid-setup would yank focus out of whatever field they're
+    // typing in. If setup isn't done yet, the next renderAll() (from the
+    // "시작하기" click) will already read this fresh state.
+    if(state.studentSetupDone) renderAll();
+  }
+
+  /* ---------------- Compact step bar ---------------- */
+  function renderDoors(){
+    document.getElementById("stepbarLabel").textContent = STEPS[state.currentStep].kicker + " · " + STEPS[state.currentStep].title;
+    document.getElementById("stepbarCount").textContent = (state.currentStep+1) + " / " + STEPS.length;
+
+    var wrap = document.getElementById("stepDots");
+    wrap.innerHTML = "";
+    var character = (state.student && state.student.character) || "🦊";
+    STEPS.forEach(function(s, i){
+      var active = i === state.currentStep;
+      var started = isStepStarted(i);
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "stepdot" + (active ? " active" : (started ? " done" : ""));
+      btn.title = s.label;
+
+      btn.appendChild(el("span", {html:
+        '<svg class="stepdot-door" viewBox="0 0 20 24">' +
+          '<rect class="stepdot-door-frame" x="1" y="1" width="18" height="22" rx="3"></rect>' +
+          '<rect class="stepdot-door-panel" x="3.5" y="3" width="13" height="18" rx="2"></rect>' +
+          '<circle class="stepdot-door-knob" cx="6.5" cy="12" r="1"></circle>' +
+        '</svg>'
+      }));
+      if(started && !active){ btn.appendChild(el("span", {class:"stepdot-check", html:"✓"})); }
+      btn.appendChild(el("span", {class:"stepdot-label", html: s.label}));
+      btn.addEventListener("click", function(){ goToStep(i); });
+      wrap.appendChild(btn);
+    });
+    updateProgress();
+    updateNameplate();
+    positionStepMascot(true);
+  }
+
+  // Mimics the original "mascot walks along the doors" nav: a floating
+  // character icon sits above whichever step is active and slides to the
+  // new spot (both left/top, since the row can wrap to a second line on
+  // narrow phones) whenever the step changes.
+  function positionStepMascot(animate){
+    var mascotEl = document.getElementById("stepbarMascot");
+    var activeBtn = document.querySelector(".stepdot.active");
+    var wrapEl = document.getElementById("stepDotsWrap");
+    if(!mascotEl || !activeBtn || !wrapEl) return;
+    mascotEl.textContent = (state.student && state.student.character) || "🦊";
+    var wrapRect = wrapEl.getBoundingClientRect();
+    var btnRect = activeBtn.getBoundingClientRect();
+    mascotEl.style.left = ((btnRect.left - wrapRect.left) + btnRect.width/2) + "px";
+    mascotEl.style.top = ((btnRect.top - wrapRect.top) - 22) + "px";
+    if(animate){
+      mascotEl.classList.remove("bounce");
+      void mascotEl.offsetWidth;
+      mascotEl.classList.add("bounce");
+    }
+  }
+  window.addEventListener("resize", function(){ positionStepMascot(false); });
+
+  function studentName(){
+    var nick = (state.student && state.student.nickname || "").trim();
+    if(nick) return nick + "콜콜이";
+    var n = (state.studentName||"").trim();
+    return n || "콜콜이";
+  }
+  function updateNameplate(){
+    document.getElementById("nameplate").textContent = studentName();
+    var spriteEl = document.getElementById("mascotSprite");
+    if(spriteEl) spriteEl.textContent = (state.student && state.student.character) || "🦊";
+  }
+  document.getElementById("nameplate").addEventListener("click", function(){
+    showPrompt("새 닉네임을 입력해줘! 뒤에 '콜콜이'가 자동으로 붙어요.", (state.student && state.student.nickname) || "", function(v){
+      state.student.nickname = v.trim();
+      save();
+      updateNameplate();
+    });
+  });
+
+  function updateProgress(){
+    var completed = STEPS.filter(function(_, i){ return isStepStarted(i); }).length;
+    var pct = Math.round((completed / STEPS.length) * 100);
+    document.getElementById("progressFill").style.width = pct + "%";
+  }
+
+  function isStepStarted(i){
+    switch(i){
+      case 0: return !!state.step1.recited;
+      case 1: return state.step2.selected.length>0;
+      case 2: return (state.step3.answer||"").trim().length>0;
+      case 3: return state.step4.items.some(function(it){return it.text||it.reason;});
+      case 4: return (state.step6.theme||"").trim().length>0;
+      case 5: return (state.step7.question||"").trim().length>0;
+      case 6: return false;
+      default: return false;
+    }
+  }
+
+  /* ---------------- Navigation ---------------- */
+  // Scroll position is normally preserved across a re-render (see renderStep),
+  // since most re-renders happen in place (checking a box, typing). Moving to
+  // a different step should behave differently: land at the top so the new
+  // step's title/guide is visible instead of wherever the footer button was.
+  var scrollResetPending = false;
+  function goToStep(i){
+    if(i < 0 || i >= STEPS.length) return;
+    state.currentStep = i;
+    scrollResetPending = true;
+    save();
+    renderAll();
+  }
+
+  document.getElementById("prevBtn").addEventListener("click", function(){
+    goToStep(state.currentStep - 1);
+  });
+  document.getElementById("nextBtn").addEventListener("click", function(){
+    if(state.currentStep === 0 && !state.step1.recited){
+      showAlert("먼저 시를 낭송하고 완료 표시를 해주세요! 🎤");
+      return;
+    }
+    var doorBtn = this;
+    if(doorBtn.disabled) return;
+    doorBtn.disabled = true;
+    doorBtn.classList.add("opening");
+    setTimeout(function(){
+      if(state.currentStep === STEPS.length - 1) goToStep(0);
+      else goToStep(state.currentStep + 1);
+    }, 360);
+  });
+  document.getElementById("resetBtn").addEventListener("click", function(){
+    showConfirm("정말 처음부터 새로 시작할까요? 지금까지 작성한 내용이 모두 지워져요.", function(){
+      state = defaultState();
+      save();
+      renderAll();
+      // defaultState() wipes state.poem too — re-fetch so STEP1 still shows
+      // the teacher's active poem instead of "아직 지정한 시가 없어요".
+      activePoemLoaded = false;
+      fetchActivePoemForStudent();
+    });
+  });
+
+  function renderAll(){
+    if(!state.studentSetupDone){
+      document.getElementById("stepbar").hidden = true;
+      document.getElementById("stepCard").hidden = true;
+      document.querySelector(".foot-nav").hidden = true;
+      renderSetupScreen();
+      return;
+    }
+    document.getElementById("setupScreen").hidden = true;
+    document.getElementById("stepbar").hidden = false;
+    document.getElementById("stepCard").hidden = false;
+    document.querySelector(".foot-nav").hidden = false;
+    renderDoors();
+    renderStep();
+    var prevBtn = document.getElementById("prevBtn");
+    var nextBtn = document.getElementById("nextBtn");
+    prevBtn.disabled = state.currentStep === 0;
+    nextBtn.disabled = false;
+    nextBtn.classList.remove("opening");
+    document.getElementById("nextLabel").textContent = state.currentStep === STEPS.length-1 ? "처음 문으로" : "다음 문 열기";
+  }
+
+  function renderSetupScreen(){
+    var screen = document.getElementById("setupScreen");
+    screen.hidden = false;
+    screen.innerHTML = "";
+
+    var card = el("div", {class:"card"});
+    card.appendChild(el("h2", {class:"step-title", style:"margin-bottom:6px;", html:"시작하기 전에"}));
+    card.appendChild(el("div", {class:"step-guide", html:"💡 학번과 이름, 닉네임을 적고 나만의 캐릭터를 골라보세요!"}));
+
+    var idWrap = el("div", {class:"field-block"});
+    idWrap.appendChild(el("label", {class:"field-label", html:"학번"}));
+    var idIn = el("input", {type:"text", placeholder:"예: 10203"});
+    idIn.value = state.student.studentId;
+    idIn.addEventListener("input", function(){ state.student.studentId = this.value; save(); });
+    idWrap.appendChild(idIn);
+    card.appendChild(idWrap);
+
+    var nameWrap = el("div", {class:"field-block"});
+    nameWrap.appendChild(el("label", {class:"field-label", html:"이름"}));
+    var nameIn = el("input", {type:"text", placeholder:"이름을 적어주세요"});
+    nameIn.value = state.student.realName;
+    nameIn.addEventListener("input", function(){ state.student.realName = this.value; save(); });
+    nameWrap.appendChild(nameIn);
+    card.appendChild(nameWrap);
+
+    var nickWrap = el("div", {class:"field-block"});
+    nickWrap.appendChild(el("label", {class:"field-label", html:"닉네임"}));
+    nickWrap.appendChild(el("div", {class:"field-hint", html:"닉네임 뒤에 자동으로 '콜콜이'가 붙어서 캐릭터 이름표에 나타나요. (예: 구름 → 구름콜콜이)"}));
+    var nickIn = el("input", {type:"text", placeholder:"예: 구름", id:"setupNickInput"});
+    nickIn.value = state.student.nickname;
+    nickIn.addEventListener("input", function(){
+      state.student.nickname = this.value;
+      save();
+      var preview = document.getElementById("setupNickPreview");
+      if(preview) preview.textContent = (this.value.trim() || "___") + "콜콜이";
+    });
+    nickWrap.appendChild(nickIn);
+    nickWrap.appendChild(el("div", {class:"field-hint", id:"setupNickPreview", style:"font-weight:700; color:var(--accent);", html: esc((state.student.nickname.trim() || "___") + "콜콜이")}));
+    card.appendChild(nickWrap);
+
+    var charWrap = el("div", {class:"field-block"});
+    charWrap.appendChild(el("label", {class:"field-label", html:"캐릭터 선택"}));
+    var grid = el("div", {class:"character-grid"});
+    CHARACTERS.forEach(function(c){
+      var btn = el("button", {type:"button", class:"character-btn" + (state.student.character===c?" selected":""), html:c});
+      btn.addEventListener("click", function(){
+        state.student.character = c;
+        save();
+        renderSetupScreen();
+      });
+      grid.appendChild(btn);
+    });
+    charWrap.appendChild(grid);
+    card.appendChild(charWrap);
+
+    var startBtn = el("button", {type:"button", class:"nav-btn next", style:"width:100%; margin-top:6px;", html:"시작하기 ▶"});
+    startBtn.addEventListener("click", function(){
+      if(!state.student.studentId.trim() || !state.student.realName.trim() || !state.student.nickname.trim()){
+        showAlert("학번, 이름, 닉네임을 모두 입력해주세요!");
+        return;
+      }
+      state.studentSetupDone = true;
+      save();
+      renderAll();
+    });
+    card.appendChild(startBtn);
+
+    screen.appendChild(card);
+  }
+
+  /* ---------------- Step renderers ---------------- */
+  var RENDERERS = [renderStep1, renderStep2, renderStep3, renderStep4, renderStep6, renderStep7, renderStep8];
+
+  function renderStep(){
+    // Rebuilding the card's innerHTML destroys whatever was focused (e.g. a
+    // checkbox the student just clicked), and losing focus makes some
+    // browsers jump the page to the top on their own. Pin the scroll
+    // position across the rebuild so the page only moves when the student
+    // scrolls it themselves.
+    var scrollY = scrollResetPending ? 0 : window.scrollY;
+    scrollResetPending = false;
+    var card = document.getElementById("stepCard");
+    card.innerHTML = "";
+    card.classList.remove("card");
+    void card.offsetWidth;
+    card.classList.add("card");
+    var meta = STEPS[state.currentStep];
+    var head = el("div", {class:"step-head"}, [
+      el("span", {class:"step-kicker", html: meta.kicker}),
+      el("h2", {class:"step-title", html: meta.title})
+    ]);
+    card.appendChild(head);
+    RENDERERS[state.currentStep](card);
+    window.scrollTo(0, scrollY);
+    requestAnimationFrame(function(){ window.scrollTo(0, scrollY); });
+  }
+
+  // In STEP2, once all 3 emotions are picked there's nothing left to check off,
+  // so finishing the 3rd quote should jump to the 2-2 graph instead of back up
+  // to the (now maxed-out) checklist — otherwise students tend to skip 2-2.
+  function scrollToStepGraph(){
+    var g = document.querySelector("#stepCard .graph-wrap");
+    if(g) g.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function guide(text){
+    return el("div", {class:"step-guide", html:"💡 " + text});
+  }
+
+  /* ===== STEP 1 : 낭송 ===== */
+  function renderStep1(card){
+    card.appendChild(guide("선생님이 정해주신 시를 살펴본 뒤, 마이크 버튼을 눌러 또박또박 낭송해보세요. 낭송한 소리가 녹음되어 나중에 다시 들어볼 수 있어요."));
+
+    var poemWrap = el("div", {class:"field-block", id:"poemTextBlock"});
+    if(!activePoemLoaded){
+      poemWrap.appendChild(el("div", {class:"field-hint", html:"시를 불러오는 중이에요..."}));
+    } else if(!state.poem.linkedId){
+      var emptyBox = el("div", {class:"mic-panel"});
+      emptyBox.appendChild(el("div", {class:"mic-status", html: activePoemError || "아직 선생님이 학생용으로 지정한 시가 없어요. 선생님께 확인을 요청해보세요."}));
+      var retryBtn = el("button", {type:"button", class:"add-btn", html:"🔄 다시 확인하기"});
+      retryBtn.addEventListener("click", function(){ activePoemLoaded = false; renderStep(); fetchActivePoemForStudent(); });
+      emptyBox.appendChild(retryBtn);
+      poemWrap.appendChild(emptyBox);
+    } else {
+      poemWrap.appendChild(el("div", {class:"field-label", html:"작품 정보"}));
+      poemWrap.appendChild(el("div", {class:"poem-display"}, [
+        el("div", {class:"poem-display-title", html: esc(state.poem.title || "(제목 없음)")}),
+        el("div", {class:"poem-display-author", html: state.poem.author ? esc(state.poem.author) : "작가 미상"}),
+        el("div", {class:"poem-display-text", html: esc(state.poem.text || "")})
+      ]));
+    }
+    card.appendChild(poemWrap);
+
+    var micWrap = el("div", {class:"field-block"});
+    micWrap.appendChild(el("label", {class:"field-label", html:"🎤 낭송 녹음하기"}));
+    var panel = el("div", {class:"mic-panel"});
+
+    if(recording || micConnecting){
+      var stopBtn = el("button", {type:"button", class:"mic-btn recording", html:"■"});
+      stopBtn.title = "낭송 종료";
+      stopBtn.addEventListener("click", function(){ stopRecitation(); });
+      panel.appendChild(stopBtn);
+      panel.appendChild(el("div", {class:"mic-status", html: recording ? "🔴 녹음 중... 시를 소리 내어 읽어 주세요." : "마이크 연결 중..."}));
+    } else if(state.step1.recited && state.step1.method === "recorded"){
+      panel.appendChild(el("div", {class:"mic-status", html:"✅ 낭송 완료! 아래에서 다시 들어볼 수 있어요."}));
+      if(audioURL){
+        var playBtn = el("button", {type:"button", class:"add-btn", html:"▶ 낭송 들어보기"});
+        var audioEl = el("audio", {controls:"controls", style:"width:100%; margin-top:10px; display:none;"});
+        audioEl.src = audioURL;
+        playBtn.addEventListener("click", function(){
+          audioEl.style.display = "block";
+          audioEl.currentTime = 0;
+          audioEl.play().catch(function(){ /* playback needs a user gesture; button click already provides one */ });
+        });
+        panel.appendChild(playBtn);
+        panel.appendChild(audioEl);
+      }
+      var redoBtn = el("button", {type:"button", class:"nav-btn prev", style:"display:block; margin:14px auto 0;", html:"🔄 다시 낭송하기"});
+      redoBtn.addEventListener("click", function(){ discardSession(); });
+      panel.appendChild(redoBtn);
+    } else if(state.step1.recited && state.step1.method === "manual"){
+      panel.appendChild(el("div", {class:"recited-badge", html:"✅ 낭송 완료로 표시했어요! 다음 단계로 이동할 수 있어요."}));
+      var retryBtn = el("button", {type:"button", class:"nav-btn prev", style:"display:block; margin:14px auto 0;", html:"🔄 다시 시도하기"});
+      retryBtn.addEventListener("click", function(){ discardSession(); });
+      panel.appendChild(retryBtn);
+    } else {
+      var startBtn = el("button", {type:"button", class:"mic-btn", html:"🎙️"});
+      startBtn.title = "낭송 시작";
+      startBtn.addEventListener("click", function(){
+        startRecitation();
+        requestAnimationFrame(function(){
+          var poemBlock = document.getElementById("poemTextBlock");
+          if(poemBlock) poemBlock.scrollIntoView({behavior:"smooth", block:"start"});
+        });
+      });
+      panel.appendChild(startBtn);
+      panel.appendChild(el("div", {class:"mic-status", html: recErrorMessage || "버튼을 누르고 시를 낭송해보세요."}));
+
+      var fallback = el("div", {class:"manual-fallback"});
+      var fbBtn = el("button", {type:"button", html:"🎧 마이크가 안 돼요 — 낭송을 마쳤으면 여기를 눌러주세요"});
+      fbBtn.addEventListener("click", function(){
+        state.step1.recited = true;
+        state.step1.method = "manual";
+        save();
+        renderStep();
+        renderDoors();
+      });
+      fallback.appendChild(fbBtn);
+      panel.appendChild(fallback);
+    }
+
+    micWrap.appendChild(panel);
+    card.appendChild(micWrap);
+  }
+
+  /* ---- Recitation pipeline: just MediaRecorder, saving an audio file the
+     student can replay. (An earlier version also ran live SpeechRecognition
+     for a real-time transcript, but that proved unreliable in practice and
+     was removed — recording is the only mechanism now.) */
+  var mediaRecorder = null;
+  var mediaChunks = [];
+  var mediaStream = null;
+  var audioURL = null;
+  var recording = false;
+  var micConnecting = false;
+  var recErrorMessage = "";
+
+  var RECORDING_MIME_CANDIDATES = ["audio/mp4","audio/webm;codecs=opus","audio/webm","audio/ogg;codecs=opus"];
+  function pickRecordingMimeType(){
+    if(!(window.MediaRecorder && MediaRecorder.isTypeSupported)) return "";
+    for(var i=0;i<RECORDING_MIME_CANDIDATES.length;i++){
+      if(MediaRecorder.isTypeSupported(RECORDING_MIME_CANDIDATES[i])) return RECORDING_MIME_CANDIDATES[i];
+    }
+    return "";
+  }
+
+  function micErrorMessage(err){
+    var name = err && err.name;
+    if(name === "NotAllowedError" || name === "PermissionDeniedError") return "마이크 사용 권한이 차단되어 있습니다. 브라우저의 사이트 설정에서 마이크 권한을 허용해 주세요.";
+    if(name === "NotFoundError" || name === "DevicesNotFoundError") return "마이크를 찾을 수 없습니다. 마이크가 연결·활성화되어 있는지, 운영체제 설정에서 브라우저의 마이크 접근이 허용되어 있는지 확인해 주세요.";
+    return "마이크에 접근할 수 없습니다. (" + (name || "알 수 없는 오류") + ")";
+  }
+
+  function startRecitation(){
+    recErrorMessage = "";
+    micConnecting = true;
+    renderStep();
+
+    if(window.isSecureContext === false){
+      recErrorMessage = "이 페이지가 보안 연결(HTTPS)이 아니어서 마이크 기능을 사용할 수 없어요. https 주소로 접속해주세요.";
+      micConnecting = false;
+      renderStep();
+      return;
+    }
+    if(!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)){
+      recErrorMessage = "이 기기·브라우저는 마이크 기능을 지원하지 않아요. 아래 수동 확인 버튼을 이용해주세요.";
+      micConnecting = false;
+      renderStep();
+      return;
+    }
+
+    navigator.mediaDevices.getUserMedia({ audio: true }).then(function(stream){
+      micConnecting = false;
+      startAudioRecording(stream);
+    }).catch(function(err){
+      micConnecting = false;
+      recErrorMessage = micErrorMessage(err);
+      renderStep();
+    });
+  }
+
+  function startAudioRecording(stream){
+    if(!window.MediaRecorder){
+      recErrorMessage = "이 브라우저는 녹음 기능을 지원하지 않아요. 아래 수동 확인 버튼을 이용해주세요.";
+      renderStep();
+      return;
+    }
+    mediaStream = stream;
+    mediaChunks = [];
+    var mimeType = pickRecordingMimeType();
+    try{
+      mediaRecorder = mimeType ? new MediaRecorder(stream, { mimeType: mimeType }) : new MediaRecorder(stream);
+    }catch(e){
+      recErrorMessage = "녹음기를 생성하지 못했습니다.";
+      renderStep();
+      return;
+    }
+    mediaRecorder.ondataavailable = function(e){
+      if(e.data && e.data.size > 0) mediaChunks.push(e.data);
+    };
+    mediaRecorder.onerror = function(e){
+      recErrorMessage = "녹음 중 오류가 발생했습니다. (" + (e && e.error && e.error.name ? e.error.name : "알 수 없는 오류") + ")";
+    };
+    mediaRecorder.onstop = function(){
+      var blob = new Blob(mediaChunks, { type: (mediaRecorder && mediaRecorder.mimeType) || mimeType || "audio/webm" });
+      if(blob.size === 0 && !recErrorMessage){
+        recErrorMessage = "녹음된 소리가 없어요.";
+      }
+      if(audioURL) URL.revokeObjectURL(audioURL);
+      audioURL = blob.size > 0 ? URL.createObjectURL(blob) : null;
+      if(mediaStream){ mediaStream.getTracks().forEach(function(t){ t.stop(); }); mediaStream = null; }
+      recording = false;
+      state.step1.recited = !!audioURL;
+      state.step1.method = audioURL ? "recorded" : "";
+      save();
+      renderStep();
+      renderDoors();
+    };
+    try{
+      mediaRecorder.start();
+      recording = true;
+      renderStep();
+    }catch(e){
+      recErrorMessage = "녹음을 시작하지 못했습니다.";
+      if(mediaStream){ mediaStream.getTracks().forEach(function(t){ t.stop(); }); mediaStream = null; }
+      renderStep();
+    }
+  }
+
+  function stopRecitation(){
+    if(mediaRecorder && recording){
+      try{ mediaRecorder.stop(); }catch(e){ recording = false; renderStep(); }
+    }
+  }
+
+  function discardSession(){
+    if(audioURL){ URL.revokeObjectURL(audioURL); audioURL = null; }
+    state.step1.recited = false;
+    state.step1.method = "";
+    recErrorMessage = "";
+    save();
+    renderStep();
+    renderDoors();
+  }
+
+  function autoGrow(ta){
+    ta.style.height = "auto";
+    ta.style.height = Math.max(120, ta.scrollHeight) + "px";
+  }
+
+  function esc(s){
+    return (s||"").replace(/[&<>]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c]; });
+  }
+
+  /* ===== STEP 2 : 정서와 분위기 ===== */
+  function renderStep2(card){
+    card.appendChild(guide("가슴 속에 차오르는 정서나 분위기를 최대 3개까지 골라보세요."));
+
+    var block1 = el("div", {class:"field-block"});
+    block1.appendChild(el("label", {class:"field-label", html:"2-1. 정서·분위기 선택 (최대 3개)"}));
+    var grid = el("div", {class:"checkbox-grid"});
+
+    function makeChip(label, isOther){
+      var checked = isOther ? state.step2.otherChecked : state.step2.selected.indexOf(label) > -1;
+      var chip = el("label", {class:"chip" + (checked?" checked":"") + (isOther?" other":"")});
+      var cb = el("input", {type:"checkbox"});
+      cb.checked = checked;
+      cb.addEventListener("change", function(){
+        var count = state.step2.selected.length + (state.step2.otherChecked?1:0);
+        if(this.checked && count >= 3){
+          this.checked = false;
+          showAlert("정서는 최대 3개까지만 선택할 수 있어요!");
+          return;
+        }
+        if(isOther){
+          state.step2.otherChecked = this.checked;
+          if(!this.checked){ state.step2.otherLabel=""; delete state.step2.graph[EMO_OTHER_KEY]; }
+        } else {
+          if(this.checked) state.step2.selected.push(label);
+          else{
+            state.step2.selected = state.step2.selected.filter(function(l){return l!==label;});
+            delete state.step2.graph[label];
+          }
+        }
+        var newCount = state.step2.selected.length + (state.step2.otherChecked?1:0);
+        save();
+        renderStep();
+        // 3개를 다 고르면 더 고를 게 없으니, 바로 2-2 그래프로 안내합니다.
+        if(this.checked && newCount >= 3) scrollToStepGraph();
+      });
+      chip.appendChild(cb);
+      chip.appendChild(textNode(isOther ? "기타: " : label));
+      if(isOther){
+        var otherInput = el("input", {type:"text", class:"other-input", placeholder:"직접 입력"});
+        otherInput.value = state.step2.otherLabel;
+        otherInput.addEventListener("click", function(e){ e.preventDefault(); });
+        otherInput.addEventListener("input", function(){ state.step2.otherLabel = this.value; save(); updateOtherEmotionDisplays(); });
+        chip.appendChild(otherInput);
+      }
+      return chip;
+    }
+    EMOTIONS.forEach(function(l){ grid.appendChild(makeChip(l, false)); });
+    grid.appendChild(makeChip("기타", true));
+    block1.appendChild(grid);
+
+    var allSelected = getSelectedEmotions();
+    card.appendChild(block1);
+
+    var block2 = el("div", {class:"field-block"});
+    block2.appendChild(el("label", {class:"field-label", html:"2-2. 정서의 흐름 그래프 그리기"}));
+    block2.appendChild(el("div", {class:"field-hint", html:"위에서 고른 정서를 순서대로 놓고, 그 강도(1~5)를 클릭해서 표시해보세요."}));
+
+    if(allSelected.length === 0){
+      block2.appendChild(el("div", {class:"graph-empty", html:"먼저 위에서 정서를 선택해주세요."}));
+    } else {
+      block2.appendChild(buildGraph(allSelected));
+    }
+    card.appendChild(block2);
+  }
+
+  var EMO_OTHER_KEY = "__OTHER__";
+  function otherEmotionDisplay(){ return (state.step2.otherLabel||"").trim() || "기타"; }
+  function updateOtherEmotionDisplays(){
+    var text = otherEmotionDisplay();
+    document.querySelectorAll('[data-emo-key="' + EMO_OTHER_KEY + '"]').forEach(function(elx){ elx.textContent = text; });
+  }
+
+  function getSelectedEmotions(){
+    var arr = state.step2.selected.map(function(l){ return { key:l, label:l }; });
+    if(state.step2.otherChecked) arr.push({ key:EMO_OTHER_KEY, label:otherEmotionDisplay() });
+    return arr;
+  }
+
+  function buildGraph(items){
+    var wrap = el("div", {class:"graph-wrap"});
+    var container = el("div", {class:"graph-grid", style:"grid-template-columns: repeat(" + items.length + ", 1fr);"});
+    var svgNS = "http://www.w3.org/2000/svg";
+    var svg = document.createElementNS(svgNS, "svg");
+    svg.setAttribute("class", "graph-svg");
+    container.appendChild(svg);
+
+    items.forEach(function(item){
+      var col = el("div", {class:"graph-col"});
+      var levels = el("div", {class:"graph-levels"});
+      for(var lvl = 5; lvl >= 1; lvl--){
+        (function(lvl){
+          var current = state.step2.graph[item.key];
+          var dot = el("button", {type:"button", class:"graph-dot" + (current===lvl?" on":"")});
+          dot.setAttribute("data-key", item.key);
+          dot.setAttribute("data-lvl", lvl);
+          dot.addEventListener("click", function(){
+            state.step2.graph[item.key] = lvl;
+            save();
+            renderStep();
+          });
+          levels.appendChild(dot);
+        })(lvl);
+      }
+      col.appendChild(levels);
+      var axisLabel = el("div", {class:"graph-axis-label", html: esc(item.label)});
+      if(item.key === EMO_OTHER_KEY) axisLabel.setAttribute("data-emo-key", EMO_OTHER_KEY);
+      col.appendChild(axisLabel);
+      container.appendChild(col);
+    });
+
+    wrap.appendChild(container);
+
+    setTimeout(function(){
+      drawGraphLine(container, svg, items);
+    }, 0);
+    window.addEventListener("resize", function once(){ drawGraphLine(container, svg, items); });
+
+    return wrap;
+  }
+
+  function drawGraphLine(container, svg, items){
+    var rect = container.getBoundingClientRect();
+    svg.setAttribute("width", rect.width);
+    svg.setAttribute("height", rect.height);
+    var pts = [];
+    items.forEach(function(item){
+      var lvl = state.step2.graph[item.key];
+      if(!lvl) return;
+      var dot = container.querySelector('.graph-dot[data-key="' + cssEscape(item.key) + '"][data-lvl="' + lvl + '"]');
+      if(!dot) return;
+      var dRect = dot.getBoundingClientRect();
+      pts.push({
+        x: dRect.left - rect.left + dRect.width/2,
+        y: dRect.top - rect.top + dRect.height/2
+      });
+    });
+    svg.innerHTML = "";
+    if(pts.length > 1){
+      var poly = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+      poly.setAttribute("points", pts.map(function(p){return p.x+","+p.y;}).join(" "));
+      poly.setAttribute("fill", "none");
+      poly.setAttribute("stroke", "var(--accent2)");
+      poly.setAttribute("stroke-width", "2.5");
+      svg.appendChild(poly);
+    }
+  }
+  function cssEscape(s){
+    return String(s).replace(/["\\]/g, "\\$&");
+  }
+
+  /* ===== STEP 3 : 시적 화자 ===== */
+  function renderStep3(card){
+    card.appendChild(guide("시 속에서 말하고 있는 사람은 누구일까요? 그 사람이 처한 상황과 하고 있는 행동을 함께 생각해보세요."));
+    var block = el("div", {class:"field-block"});
+    block.appendChild(el("label", {class:"field-label", html:"시적 화자는 어떤 상황에서 어떤 행동을 하나요?"}));
+    var ta = el("textarea", {class:"tall", placeholder:"예: 화자는 고향을 떠난 사람으로, 밤하늘의 별을 보며 그리움을 느끼고 있다..."});
+    ta.value = state.step3.answer;
+    ta.addEventListener("input", function(){ state.step3.answer = this.value; save(); renderDoors(); });
+    block.appendChild(ta);
+    card.appendChild(block);
+  }
+
+  /* ===== STEP 4 : 시어(시구) 탐구 ===== */
+  function renderStep4(card){
+    card.appendChild(guide("시에서 의미 있게 다가오거나 아름답게 느껴지는 시어·시구를 찾아, 그 이유를 적어보세요."));
+
+    var b1 = el("div", {class:"field-block"});
+    b1.appendChild(el("label", {class:"field-label", html:"의미 있거나 미적 감각이 느껴지는 시어·시구와 그 이유"}));
+    var itemsHolder = el("div");
+    state.step4.items.forEach(function(it, idx){
+      itemsHolder.appendChild(buildItemSet(it, idx));
+    });
+    b1.appendChild(itemsHolder);
+    var addItemBtn = el("button", {type:"button", class:"add-btn", html:"➕ 시구 추가하기"});
+    addItemBtn.addEventListener("click", function(){
+      state.step4.items.push({text:"",reason:""});
+      save(); renderStep();
+    });
+    b1.appendChild(addItemBtn);
+    card.appendChild(b1);
+  }
+
+  function buildItemSet(it, idx){
+    var wrap = el("div", {class:"set-card"});
+    var top = el("div", {class:"set-card-top"}, [el("span", {html:"시어·시구 " + (idx+1)})]);
+    if(state.step4.items.length > 1){
+      var rm = el("button", {type:"button", class:"remove-x", html:"✕"});
+      rm.addEventListener("click", function(){ state.step4.items.splice(idx,1); save(); renderStep(); });
+      top.appendChild(rm);
+    }
+    wrap.appendChild(top);
+    var row = el("div", {class:"set-row two-col"});
+    var tIn = el("textarea", {class:"grow", placeholder:"의미 있거나 미적 감각이 느껴지는 시어·시구"});
+    tIn.value = it.text;
+    tIn.addEventListener("input", function(){ it.text=this.value; save(); });
+    var rIn = el("textarea", {class:"grow", placeholder:"그 이유"});
+    rIn.value = it.reason;
+    rIn.addEventListener("input", function(){ it.reason=this.value; save(); });
+    row.appendChild(tIn); row.appendChild(rIn);
+    wrap.appendChild(row);
+    return wrap;
+  }
+
+  /* ===== STEP 6 : 주제와 의미 ===== */
+  function renderStep6(card){
+    card.appendChild(guide("지금까지 살펴본 내용을 바탕으로, 이 시가 전하고자 하는 바를 한 문장으로 정리해보세요."));
+
+    var b1 = el("div", {class:"field-block"});
+    b1.appendChild(el("label", {class:"field-label", html:"6-1. 이 시의 주제"}));
+    var row = el("div", {class:"fill-blank-row"});
+    row.appendChild(textNode("이 시는 ("));
+    var input = el("input", {type:"text", placeholder:"핵심 주제"});
+    input.value = state.step6.theme;
+    input.addEventListener("input", function(){
+      state.step6.theme = this.value;
+      this.style.width = Math.max(60, this.value.length * 14 + 20) + "px";
+      save();
+      renderDoors();
+    });
+    setTimeout(function(){ input.style.width = Math.max(60, input.value.length * 14 + 20) + "px"; }, 0);
+    row.appendChild(input);
+    row.appendChild(textNode(")을(를) 표현한 시이다."));
+    b1.appendChild(row);
+    card.appendChild(b1);
+
+    var b2 = el("div", {class:"field-block"});
+    b2.appendChild(el("label", {class:"field-label", html:"6-2. 다른 해석도 가능한가요?"}));
+    var ta = el("textarea", {class:"grow", placeholder:"다른 관점에서 이 시를 어떻게 볼 수 있을지 자유롭게 적어보세요."});
+    ta.value = state.step6.other;
+    ta.addEventListener("input", function(){ state.step6.other = this.value; save(); });
+    b2.appendChild(ta);
+    card.appendChild(b2);
+  }
+
+  /* ===== STEP 7 : 더 나누고 싶은 이야기 ===== */
+  function renderStep7(card){
+    card.appendChild(guide("이 시를 읽고 나서 친구들과 더 이야기 나누고 싶은 부분이 있나요? 질문 형태로 하나만 적어보세요."));
+    var block = el("div", {class:"field-block"});
+    block.appendChild(el("label", {class:"field-label", html:"작품 자체, 사회, 나의 삶과 연관한 질문을 한 개 써 보세요"}));
+    var ta = el("textarea", {class:"grow", placeholder:"예: 화자는 왜 마지막 순간까지 희망을 놓지 않았을까?"});
+    ta.value = state.step7.question;
+    ta.addEventListener("input", function(){ state.step7.question = this.value; save(); renderDoors(); });
+    block.appendChild(ta);
+    card.appendChild(block);
+  }
+
+  /* ===== STEP 8 : 보고서 ===== */
+  function renderStep8(card){
+    card.appendChild(guide("지금까지의 감상을 모아 나만의 감상 보고서를 완성했어요! 빈칸이 남아있다면 이전 단계로 돌아가 채워보세요."));
+
+    var emotions = getSelectedEmotions();
+    var intensityText = describeIntensities(emotions);
+    var items = state.step4.items.filter(function(it){ return (it.text||"").trim(); });
+
+    function b(val, ph){
+      var has = val && String(val).trim().length > 0;
+      return '<span class="blank' + (has?'':' empty') + '">' + esc(has ? val : ph) + '</span>';
+    }
+
+    var lines = [];
+    lines.push("<p>작품명: " + b(state.poem.title,"____") + " &nbsp;&nbsp; 작가명: " + b(state.poem.author,"____") + "</p>");
+
+    if(emotions.length){
+      emotions.forEach(function(item){
+        lines.push("<p>나는 이 시에서 " + b(item.label,"____") + " 정서를 느꼈다.</p>");
+      });
+    } else {
+      lines.push("<p>나는 이 시에서 " + b("","____") + " 정서를 느꼈다.</p>");
+    }
+
+    lines.push("<p>이 시에서 느낀 정서별 강도는 " + b(intensityText, "________") + "이다.</p>");
+    lines.push("<p>이 시의 시적 화자는 " + b(state.step3.answer, "________________") + ".</p>");
+
+    if(items.length){
+      items.forEach(function(it){
+        lines.push("<p>특히 내가 의미 있거나 미적 느낌을 받고 감탄한 시어·시구는 " + b(it.text,"____________") + "이다. 그 이유는 " + b(it.reason,"____________") + "이다.</p>");
+      });
+    } else {
+      lines.push("<p>특히 내가 의미 있거나 미적 느낌을 받고 감탄한 시어·시구는 " + b("","____________") + "이다. 그 이유는 " + b("","____________") + "이다.</p>");
+    }
+
+    lines.push("<p>나는 이 시가 " + b(state.step6.theme, "________________") + "에 대해 이야기한다고 생각한다.</p>");
+    lines.push("<p>다른 시각으로 보면 " + b(state.step6.other, "________________") + "라고도 볼 수 있다.</p>");
+    lines.push("<p>이 시와 관련해서 더 나누고 싶은 질문은, " + b(state.step7.question, "________________") + "이다.</p>");
+
+    var sheet = el("div", {class:"report-sheet"});
+    sheet.innerHTML = "<h3>나의 시 감상</h3><hr class='report-divider'>" + lines.join("");
+    card.appendChild(sheet);
+
+    var confBlock = el("div", {style:"margin-top:22px;"});
+    confBlock.appendChild(el("h3", {style:"font-size:16px; margin-bottom:10px;", html:"🤖 나의 감상 완성도"}));
+    var scores = computeConfidence();
+    scores.forEach(function(s){
+      var row = el("div", {class:"conf-row"});
+      row.appendChild(el("span", {class:"conf-label", html:s.label}));
+      var bar = el("div", {class:"conf-bar"});
+      bar.appendChild(el("div", {class:"conf-fill", style:"width:"+s.value+"%"}));
+      row.appendChild(bar);
+      row.appendChild(el("span", {class:"conf-pct", html:s.value+"%"}));
+      confBlock.appendChild(row);
+      confBlock.appendChild(el("div", {class:"conf-reason", html: "→ " + esc(s.reason)}));
+    });
+    card.appendChild(confBlock);
+
+    var folderRow = el("div", {class:"fill-blank-row"});
+    folderRow.appendChild(textNode("선생님의 ("));
+    var folderInput = el("input", {type:"text", placeholder:"폴더 이름"});
+    folderInput.style.width = "130px";
+    folderInput.value = state.step8FolderName || "";
+    folderInput.addEventListener("input", function(){ state.step8FolderName = this.value; save(); });
+    folderRow.appendChild(folderInput);
+    folderRow.appendChild(textNode(") 폴더로"));
+    var submitBtn = el("button", {type:"button", class:"print-btn", style:"margin-top:0;", html:"📤 제출하기"});
+    submitBtn.addEventListener("click", function(){ submitReportToTeacher(sheet, scores); });
+    folderRow.appendChild(submitBtn);
+    card.appendChild(folderRow);
+    card.appendChild(el("div", {class:"field-hint", id:"submitStatus", style:"margin-top:8px;"}));
+  }
+
+  function setSubmitStatus(text){
+    var el2 = document.getElementById("submitStatus");
+    if(el2) el2.textContent = text;
+  }
+
+  // 학생이 STEP8에서 완성한 보고서를 공유 백엔드(같은 구글 시트, submissions
+  // 탭)로 보냅니다. 같은 학번+시로 다시 누르면 새 행이 또 쌓이지 않고
+  // 기존 제출 내용을 덮어써서(업서트) 선생님은 항상 최신본만 보게 됩니다.
+  function buildReportPlainText(sheetEl, scores){
+    var lines = [];
+    sheetEl.querySelectorAll("p").forEach(function(p){ lines.push(p.textContent); });
+    lines.push("");
+    lines.push("[나의 감상 완성도]");
+    scores.forEach(function(s){ lines.push(s.label + ": " + s.value + "% — " + s.reason); });
+    return lines.join("\n");
+  }
+
+  function submitReportToTeacher(sheetEl, scores){
+    if(!poemBankAvailable()){
+      showAlert("제출 기능을 쓰려면 이 파일의 POEM_API_URL이 설정되어 있어야 해요.");
+      return;
+    }
+    if(!(state.student && state.student.studentId)){
+      showAlert("학번 정보가 없어요. 처음 화면에서 학번을 입력해주세요.");
+      return;
+    }
+    var payload = {
+      action: "submitReport",
+      studentId: state.student.studentId,
+      realName: state.student.realName,
+      nickname: state.student.nickname,
+      poemId: state.poem.linkedId,
+      poemTitle: state.poem.title,
+      poemAuthor: state.poem.author,
+      folderName: (state.step8FolderName||"").trim(),
+      reportText: buildReportPlainText(sheetEl, scores),
+      scoresJson: JSON.stringify(scores)
+    };
+    setSubmitStatus("제출하는 중...");
+    fetch(POEM_API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(payload)
+    }).then(function(r){ return r.json(); }).then(function(json){
+      if(json && json.error) throw new Error(json.error);
+      var now = new Date();
+      var hh = now.getHours(), mm = now.getMinutes();
+      var ampm = hh < 12 ? "오전" : "오후";
+      var h12 = hh % 12; if(h12===0) h12 = 12;
+      setSubmitStatus("✅ 선생님께 제출했어요! (" + ampm + " " + h12 + ":" + (mm<10?"0"+mm:mm) + ")");
+    }).catch(function(err){
+      setSubmitStatus("❌ 제출에 실패했어요: " + ((err && err.message) || "네트워크 연결을 확인해주세요."));
+    });
+  }
+
+  function describeIntensities(items){
+    var withLevels = items.filter(function(it){ return !!state.step2.graph[it.key]; });
+    if(!withLevels.length) return "";
+    return withLevels.map(function(it){ return it.label + "(강도 " + state.step2.graph[it.key] + ")"; }).join(", ");
+  }
+
+  function ratio(len, target){ return Math.max(0, Math.min(100, Math.round((len/target)*100))); }
+
+  function computeConfidence(){
+    var reciteScore = 0, reciteReason = "";
+    if(state.step1.recited){
+      if(state.step1.method === "recorded"){
+        reciteScore = 85;
+        reciteReason = "낭송을 녹음했어요.";
+      } else {
+        reciteScore = 55;
+        reciteReason = "수동으로 낭송 완료를 표시했어요(녹음 파일은 없어요).";
+      }
+    } else {
+      reciteReason = "아직 낭송을 완료하지 않았어요.";
+    }
+    reciteScore = Math.max(0, Math.min(100, reciteScore));
+
+    var emo = getSelectedEmotions();
+    // 근거 시구 입력칸이 없는 버전이라, 정서 파악 점수는 몇 개를 선택했는지로만 매깁니다.
+    var emoScore = emo.length ? Math.round((emo.length/3)*100) : 0;
+    var emoReason = emo.length ? ("정서를 " + emo.length + "개 선택했어요.") : "아직 정서를 선택하지 않았어요.";
+
+    var speakerLen = (state.step3.answer||"").trim().length;
+    var speakerScore = ratio(speakerLen, 60);
+    var speakerReason = speakerLen ? ("시적 화자에 대한 답변을 " + speakerLen + "자 작성했어요.") : "아직 시적 화자에 대한 답변이 없어요.";
+
+    var itemsFilled = state.step4.items.filter(function(it){return it.text&&it.reason;}).length;
+    var wordScore = itemsFilled ? Math.min(100, Math.round((itemsFilled/1)*100)) : 0;
+    var wordReason = "의미 있는 시어·시구 " + itemsFilled + "/" + state.step4.items.length + "개를 완성했어요.";
+
+    var themeLen = (state.step6.theme||"").trim().length;
+    var otherLen = (state.step6.other||"").trim().length;
+    var themeScore = ratio(themeLen, 15);
+    var otherScore = ratio(otherLen, 40);
+    var themeCombined = Math.round(themeScore*0.7 + otherScore*0.3);
+    var themeReason = "주제 문장 " + themeLen + "자, 다른 해석 " + otherLen + "자를 작성했어요.";
+
+    var evidenceFields = [state.step3.answer].concat(
+      state.step4.items.map(function(it){return it.reason;})
+    );
+    var evidenceFilled = evidenceFields.filter(function(v){return v && v.trim();}).length;
+    var evidenceScore = Math.round((evidenceFilled/Math.max(1,evidenceFields.length))*100);
+    var evidenceReason = evidenceFilled + "/" + evidenceFields.length + "개 항목에 구체적인 근거를 남겼어요.";
+
+    var textFields = [state.step3.answer, state.step6.theme, state.step6.other].concat(
+      state.step4.items.map(function(it){return it.reason;})
+    ).filter(function(v){return v && v.trim();});
+    var avgLen = textFields.length ? textFields.reduce(function(a,v){return a+v.length;},0)/textFields.length : 0;
+    var expressScore = ratio(avgLen, 35);
+    var expressReason = textFields.length ? ("작성한 문장의 평균 길이가 약 " + Math.round(avgLen) + "자예요.") : "아직 작성한 문장이 없어요.";
+
+    return [
+      { label:"낭송의 매력도", value: reciteScore, reason: reciteReason },
+      { label:"정서 파악", value: emoScore, reason: emoReason },
+      { label:"시적 화자 탐구", value: speakerScore, reason: speakerReason },
+      { label:"시어와 시구 분석", value: wordScore, reason: wordReason },
+      { label:"주제 추론", value: themeCombined, reason: themeReason },
+      { label:"근거의 충분성", value: evidenceScore, reason: evidenceReason },
+      { label:"문장 표현력", value: expressScore, reason: expressReason }
+    ];
+  }
+
+  /* ---------------- init ---------------- */
+  renderAll();
+  fetchActivePoemForStudent();
+})();
+</script>
+</body>
+</html>
