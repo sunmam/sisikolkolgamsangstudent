@@ -640,6 +640,7 @@
   var activePoemLoaded = false;
   var activePoemError = "";
   var submissionDeadline = ""; // ISO 문자열, 없으면 마감 없음
+  var folderDeadlineTimer = null;
 
   function deadlinePassed(){
     return !!(submissionDeadline && new Date() > new Date(submissionDeadline));
@@ -651,9 +652,13 @@
     var pad = function(n){ return (n<10?"0":"")+n; };
     return (d.getMonth()+1) + "월 " + d.getDate() + "일 " + ampm + " " + h12 + ":" + pad(d.getMinutes());
   }
+  // 폴더마다 마감이 다를 수 있어서, 학생이 STEP8에서 적은 폴더 이름 기준으로
+  // 조회합니다. 폴더 이름을 바꿀 때마다 다시 불러옵니다.
   function fetchDeadlineForStudent(){
     if(!poemBankAvailable()) return;
-    fetch(POEM_API_URL + "?action=getDeadline")
+    var folderName = (state.step8FolderName||"").trim();
+    var url = POEM_API_URL + "?action=getDeadline" + (folderName ? "&folderName=" + encodeURIComponent(folderName) : "");
+    fetch(url)
       .then(function(r){ return r.json(); })
       .then(function(res){
         submissionDeadline = (res && res.deadline) || "";
@@ -1079,6 +1084,8 @@
   var mediaChunks = [];
   var mediaStream = null;
   var audioURL = null;
+  var audioBlob = null; // 실제 파일 데이터 — 제출할 때 서버로 올리는 데 씀
+  var audioUploadedForCurrentRecording = false;
   var recording = false;
   var micConnecting = false;
   var recErrorMessage = "";
@@ -1156,6 +1163,8 @@
       }
       if(audioURL) URL.revokeObjectURL(audioURL);
       audioURL = blob.size > 0 ? URL.createObjectURL(blob) : null;
+      audioBlob = blob.size > 0 ? blob : null;
+      audioUploadedForCurrentRecording = false; // 새 녹음이니 다음 제출 때 같이 올려야 함
       if(mediaStream){ mediaStream.getTracks().forEach(function(t){ t.stop(); }); mediaStream = null; }
       recording = false;
       state.step1.recited = !!audioURL;
@@ -1183,6 +1192,8 @@
 
   function discardSession(){
     if(audioURL){ URL.revokeObjectURL(audioURL); audioURL = null; }
+    audioBlob = null;
+    audioUploadedForCurrentRecording = false;
     state.step1.recited = false;
     state.step1.method = "";
     recErrorMessage = "";
@@ -1520,7 +1531,12 @@
     folderInput.style.width = "130px";
     folderInput.value = state.step8FolderName || "";
     folderInput.disabled = deadlineOver;
-    folderInput.addEventListener("input", function(){ state.step8FolderName = this.value; save(); });
+    folderInput.addEventListener("input", function(){
+      state.step8FolderName = this.value;
+      save();
+      clearTimeout(folderDeadlineTimer);
+      folderDeadlineTimer = setTimeout(fetchDeadlineForStudent, 500);
+    });
     folderRow.appendChild(folderInput);
     folderRow.appendChild(textNode(") 폴더로"));
     var submitBtn = el("button", {type:"button", class:"print-btn", style:"margin-top:0;", html:"📤 제출하기"});
@@ -1609,28 +1625,48 @@
       reportText: buildReportPlainText(scores),
       scoresJson: JSON.stringify(scores)
     };
-    setSubmitStatus(isAuto ? "자동으로 반영하는 중..." : "제출하는 중...");
-    fetch(POEM_API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify(payload)
-    }).then(function(r){ return r.json(); }).then(function(json){
-      if(json && json.error) throw new Error(json.error);
-      // Persist directly (not via save()) — save() re-arms the auto-submit
-      // timer, and since nothing actually changed here, that would fire
-      // another submit in 2s, whose own success handler would do the same
-      // again, forever. Writing to storage directly breaks that loop.
-      state.step8Submitted = true;
-      try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){ /* ignore */ }
-      var now = new Date();
-      var hh = now.getHours(), mm = now.getMinutes();
-      var ampm = hh < 12 ? "오전" : "오후";
-      var h12 = hh % 12; if(h12===0) h12 = 12;
-      var timeStr = ampm + " " + h12 + ":" + (mm<10?"0"+mm:mm);
-      setSubmitStatus(isAuto ? ("🔄 수정 내용이 자동으로 반영됐어요 (" + timeStr + ")") : ("✅ 선생님께 제출했어요! (" + timeStr + ")"));
-    }).catch(function(err){
-      setSubmitStatus("❌ " + (isAuto ? "자동 반영에 실패했어요: " : "제출에 실패했어요: ") + ((err && err.message) || "네트워크 연결을 확인해주세요."));
-    });
+
+    var includingAudio = !!(audioBlob && !audioUploadedForCurrentRecording);
+
+    function sendPayload(){
+      setSubmitStatus(isAuto ? "자동으로 반영하는 중..." : (includingAudio ? "제출하는 중... (녹음 파일도 함께 올려요)" : "제출하는 중..."));
+      fetch(POEM_API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(payload)
+      }).then(function(r){ return r.json(); }).then(function(json){
+        if(json && json.error) throw new Error(json.error);
+        if(includingAudio) audioUploadedForCurrentRecording = true;
+        // Persist directly (not via save()) — save() re-arms the auto-submit
+        // timer, and since nothing actually changed here, that would fire
+        // another submit in 2s, whose own success handler would do the same
+        // again, forever. Writing to storage directly breaks that loop.
+        state.step8Submitted = true;
+        try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){ /* ignore */ }
+        var now = new Date();
+        var hh = now.getHours(), mm = now.getMinutes();
+        var ampm = hh < 12 ? "오전" : "오후";
+        var h12 = hh % 12; if(h12===0) h12 = 12;
+        var timeStr = ampm + " " + h12 + ":" + (mm<10?"0"+mm:mm);
+        setSubmitStatus(isAuto ? ("🔄 수정 내용이 자동으로 반영됐어요 (" + timeStr + ")") : ("✅ 선생님께 제출했어요! (" + timeStr + ")"));
+      }).catch(function(err){
+        setSubmitStatus("❌ " + (isAuto ? "자동 반영에 실패했어요: " : "제출에 실패했어요: ") + ((err && err.message) || "네트워크 연결을 확인해주세요."));
+      });
+    }
+
+    if(includingAudio){
+      var reader = new FileReader();
+      reader.onloadend = function(){
+        var base64 = String(reader.result||"").split(",")[1] || "";
+        payload.audioBase64 = base64;
+        payload.audioMimeType = audioBlob.type || "audio/webm";
+        sendPayload();
+      };
+      reader.onerror = function(){ sendPayload(); }; // 인코딩 실패해도 텍스트 제출은 계속 진행
+      reader.readAsDataURL(audioBlob);
+    } else {
+      sendPayload();
+    }
   }
 
   // 한 번이라도 수동 제출을 한 뒤에는, 마감 전까지 어떤 입력이든 바뀌면
