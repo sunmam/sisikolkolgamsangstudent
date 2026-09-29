@@ -515,7 +515,7 @@
       },
       step6: { theme:"", other:"" },
       step7: { question:"" },
-      step8FolderName: "",
+      classFolder: "", // 선생님이 준 링크의 ?class= 값 — 반 이름, 학생이 직접 입력하지 않음
       step8Submitted: false
     };
   }
@@ -640,7 +640,20 @@
   var activePoemLoaded = false;
   var activePoemError = "";
   var submissionDeadline = ""; // ISO 문자열, 없으면 마감 없음
-  var folderDeadlineTimer = null;
+
+  // 선생님이 반 카드에서 만들어준 링크(?class=반이름)로 들어오면, 그 반
+  // 이름을 저장해두고 계속 씁니다. 나중에 그 링크 없이 다시 들어와도(즐겨찾기
+  // 등) 이전에 저장된 값을 그대로 쓰도록 localStorage에 남겨둡니다.
+  function detectClassFolderFromUrl(){
+    try{
+      var params = new URLSearchParams(window.location.search);
+      var cls = (params.get("class")||"").trim();
+      if(cls && cls !== state.classFolder){
+        state.classFolder = cls;
+        save();
+      }
+    }catch(e){ /* URLSearchParams 미지원 등 — 이전에 저장된 값을 그대로 씀 */ }
+  }
 
   function deadlinePassed(){
     return !!(submissionDeadline && new Date() > new Date(submissionDeadline));
@@ -652,11 +665,11 @@
     var pad = function(n){ return (n<10?"0":"")+n; };
     return (d.getMonth()+1) + "월 " + d.getDate() + "일 " + ampm + " " + h12 + ":" + pad(d.getMinutes());
   }
-  // 폴더마다 마감이 다를 수 있어서, 학생이 STEP8에서 적은 폴더 이름 기준으로
-  // 조회합니다. 폴더 이름을 바꿀 때마다 다시 불러옵니다.
+  // 반(폴더)마다 마감이 다를 수 있어서, 선생님이 준 링크에서 읽은 반 이름
+  // 기준으로 조회합니다.
   function fetchDeadlineForStudent(){
     if(!poemBankAvailable()) return;
-    var folderName = (state.step8FolderName||"").trim();
+    var folderName = (state.classFolder||"").trim();
     var url = POEM_API_URL + "?action=getDeadline" + (folderName ? "&folderName=" + encodeURIComponent(folderName) : "");
     fetch(url)
       .then(function(r){ return r.json(); })
@@ -678,11 +691,17 @@
       if(state.currentStep === 0) renderStep();
       return;
     }
-    fetch(POEM_API_URL + "?action=current")
+    if(!(state.classFolder||"").trim()){
+      activePoemLoaded = true;
+      activePoemError = "선생님이 알려주신 링크(또는 QR)로 다시 들어와주세요. 이 화면만으로는 반이 확인되지 않아요.";
+      if(state.currentStep === 0) renderStep();
+      return;
+    }
+    fetch(POEM_API_URL + "?action=current&folderName=" + encodeURIComponent(state.classFolder))
       .then(function(r){ return r.json(); })
       .then(function(poem){
         activePoemLoaded = true;
-        activePoemError = "";
+        activePoemError = poem && poem.id ? "" : "아직 선생님이 이 반에 배포한 시가 없어요.";
         applyActivePoem(poem);
       })
       .catch(function(){
@@ -849,7 +868,9 @@
   });
   document.getElementById("resetBtn").addEventListener("click", function(){
     showConfirm("정말 처음부터 새로 시작할까요? 지금까지 작성한 내용이 모두 지워져요.", function(){
+      var keepClassFolder = state.classFolder;
       state = defaultState();
+      state.classFolder = keepClassFolder; // 반 배정은 링크로 다시 들어와야만 바뀌는 값이라 초기화 대상이 아님
       save();
       renderAll();
       // defaultState() wipes state.poem too — re-fetch so STEP1 still shows
@@ -1520,22 +1541,15 @@
       }));
     }
 
+    var hasClass = !!(state.classFolder||"").trim();
     var folderRow = el("div", {class:"fill-blank-row"});
-    folderRow.appendChild(textNode("선생님의 ("));
-    var folderInput = el("input", {type:"text", placeholder:"폴더 이름"});
-    folderInput.style.width = "130px";
-    folderInput.value = state.step8FolderName || "";
-    folderInput.disabled = deadlineOver;
-    folderInput.addEventListener("input", function(){
-      state.step8FolderName = this.value;
-      save();
-      clearTimeout(folderDeadlineTimer);
-      folderDeadlineTimer = setTimeout(fetchDeadlineForStudent, 500);
-    });
-    folderRow.appendChild(folderInput);
-    folderRow.appendChild(textNode(") 폴더로"));
+    if(hasClass){
+      folderRow.appendChild(textNode("🏫 " + state.classFolder + " 반으로"));
+    } else {
+      folderRow.appendChild(el("span", {style:"color:var(--danger); font-weight:700;", html:"⚠️ 선생님이 알려주신 링크(또는 QR)로 들어와야 제출할 수 있어요."}));
+    }
     var submitBtn = el("button", {type:"button", class:"print-btn", style:"margin-top:0;", html:"📤 제출하기"});
-    submitBtn.disabled = deadlineOver;
+    submitBtn.disabled = deadlineOver || !hasClass;
     submitBtn.addEventListener("click", function(){ submitReportToTeacher(false); });
     folderRow.appendChild(submitBtn);
     card.appendChild(folderRow);
@@ -1603,6 +1617,10 @@
       if(!isAuto) showAlert("학번 정보가 없어요. 처음 화면에서 학번을 입력해주세요.");
       return;
     }
+    if(!(state.classFolder||"").trim()){
+      if(!isAuto) showAlert("선생님이 알려주신 링크(또는 QR)로 들어와야 제출할 수 있어요.");
+      return;
+    }
     if(deadlinePassed()){
       if(!isAuto) showAlert("제출 기한이 지나서 제출할 수 없어요.");
       return;
@@ -1616,7 +1634,7 @@
       poemId: state.poem.linkedId,
       poemTitle: state.poem.title,
       poemAuthor: state.poem.author,
-      folderName: (state.step8FolderName||"").trim(),
+      folderName: (state.classFolder||"").trim(),
       reportText: buildReportPlainText(scores),
       scoresJson: JSON.stringify(scores)
     };
@@ -1726,6 +1744,7 @@
   }
 
   /* ---------------- init ---------------- */
+  detectClassFolderFromUrl();
   renderAll();
   fetchActivePoemForStudent();
   fetchDeadlineForStudent();
