@@ -1268,9 +1268,24 @@
       if(isOther){
         var otherInput = el("input", {type:"text", class:"other-input", placeholder:"직접 입력"});
         otherInput.value = state.step2.otherLabel;
+        // 이 입력칸을 눌러도 체크가 풀리지 않게 막아둔 것인데(타이핑하다
+        // 실수로 해제되는 걸 막으려고), 그 바람에 체크된 뒤에는 칩 대부분을
+        // 이 입력칸이 차지해서 해제할 방법이 거의 없어집니다. 그래서 체크된
+        // 동안에는 확실히 누를 수 있는 별도의 해제(✕) 버튼을 둡니다.
         otherInput.addEventListener("click", function(e){ e.preventDefault(); });
         otherInput.addEventListener("input", function(){ state.step2.otherLabel = this.value; save(); updateOtherEmotionDisplays(); });
         chip.appendChild(otherInput);
+        if(checked){
+          var clearOtherBtn = el("button", {type:"button", class:"remove-x", style:"padding:0 2px; font-size:13px; line-height:1;", title:"기타 선택 해제"});
+          clearOtherBtn.textContent = "✕";
+          clearOtherBtn.addEventListener("click", function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            cb.checked = false;
+            cb.dispatchEvent(new Event("change", { bubbles:true }));
+          });
+          chip.appendChild(clearOtherBtn);
+        }
       }
       return chip;
     }
