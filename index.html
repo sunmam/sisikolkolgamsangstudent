@@ -31,44 +31,9 @@
     --shadow: 0 8px 24px rgba(90, 90, 170, 0.14);
     --radius: 18px;
   }
-  @media (prefers-color-scheme: dark){
-    :root:not([data-theme="light"]){
-      --bg: #14151f;
-      --bg-soft: #1c1e2c;
-      --card: #20222f;
-      --ink: #eef0fb;
-      --ink-soft: #a8acc7;
-      --line: #33364a;
-      --accent: #8b7dff;
-      --accent-ink: #1a1030;
-      --accent2: #ff9bb8;
-      --accent3: #3ce0c4;
-      --accent4: #ffcb4d;
-      --danger: #ff7089;
-      --door-wood: #ffbf7a;
-      --door-wood-dark: #d97a2a;
-      --door-frame: #2a2740;
-      --shadow: 0 8px 24px rgba(0,0,0,0.45);
-    }
-  }
-  :root[data-theme="dark"]{
-    --bg: #14151f;
-    --bg-soft: #1c1e2c;
-    --card: #20222f;
-    --ink: #eef0fb;
-    --ink-soft: #a8acc7;
-    --line: #33364a;
-    --accent: #8b7dff;
-    --accent-ink: #1a1030;
-    --accent2: #ff9bb8;
-    --accent3: #3ce0c4;
-    --accent4: #ffcb4d;
-    --danger: #ff7089;
-    --door-wood: #ffbf7a;
-    --door-wood-dark: #d97a2a;
-    --door-frame: #2a2740;
-    --shadow: 0 8px 24px rgba(0,0,0,0.45);
-  }
+  /* 기기의 다크모드 설정과 상관없이 항상 밝은 색으로 보이도록, 어두운
+     모드용 색상 재정의를 두지 않습니다(모바일은 특히 다크모드가 기본인
+     경우가 많아서, 자동으로 어두운 배경이 뜨는 걸 막기 위함). */
 
   *{ box-sizing: border-box; }
   button{ touch-action: manipulation; }
