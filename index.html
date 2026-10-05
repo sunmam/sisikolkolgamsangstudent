@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="light only">
 <title>시시콜콜 감상하기 학생용</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -139,7 +140,8 @@
   .stepdot-door{ width: 13px; height: 17px; flex: none; overflow: visible; }
   .stepdot-door-frame{ fill: var(--door-frame); }
   .stepdot-door-panel{
-    fill: var(--door-wood); transition: transform 0.25s, fill 0.25s;
+    fill: color-mix(in srgb, var(--dot-c, var(--door-wood)) 55%, white);
+    transition: transform 0.25s, fill 0.25s;
     transform-origin: 3.5px 9px; transform-box: fill-box;
   }
   .stepdot-door-knob{ fill: #ffe9b0; }
@@ -157,7 +159,7 @@
     transform: translateY(-2px) rotate(-1deg); box-shadow: 3px 4px 0 var(--ink);
   }
   .stepdot.active .stepdot-label{ color: var(--accent); font-weight: 700; }
-  .stepdot.active .stepdot-door-panel{ transform: rotateY(-35deg); fill: var(--accent4); }
+  .stepdot.active .stepdot-door-panel{ transform: rotateY(-35deg); fill: var(--dot-c, var(--accent4)); }
 
   .progress-track{
     height: 8px; background: var(--card); border: 2px solid var(--ink); border-radius: 999px; margin-top: 12px; overflow: hidden;
@@ -206,13 +208,13 @@
   .character-grid{ display: flex; flex-wrap: wrap; gap: 10px; }
   .character-btn{
     width: 58px; height: 58px; border-radius: 16px; border: 2.5px solid var(--ink);
-    background: var(--card); font-size: 28px; cursor: pointer;
+    background: color-mix(in srgb, var(--char-c, var(--card)) 16%, white); font-size: 28px; cursor: pointer;
     display: flex; align-items: center; justify-content: center; transition: all .15s;
     box-shadow: 2px 3px 0 var(--ink);
   }
   .character-btn:hover{ transform: translateY(-3px) rotate(-2deg); }
   .character-btn.selected{
-    border-color: var(--ink); background: color-mix(in srgb, var(--accent) 20%, white);
+    border-color: var(--ink); background: color-mix(in srgb, var(--char-c, var(--accent)) 40%, white);
     transform: translateY(-3px) scale(1.06) rotate(-2deg); box-shadow: 3px 4px 0 var(--ink);
   }
   .field-label{ font-family: 'Jua', sans-serif; font-weight: 400; font-size: 15px; margin-bottom: 8px; display:block; }
@@ -782,6 +784,7 @@
       btn.type = "button";
       btn.className = "stepdot" + (active ? " active" : (started ? " done" : ""));
       btn.title = s.label;
+      btn.style.setProperty("--dot-c", STEP_ACCENTS[i % STEP_ACCENTS.length]);
 
       btn.appendChild(el("span", {html:
         '<svg class="stepdot-door" viewBox="0 0 20 24">' +
@@ -970,8 +973,9 @@
     var charWrap = el("div", {class:"field-block"});
     charWrap.appendChild(el("label", {class:"field-label", html:"캐릭터 선택"}));
     var grid = el("div", {class:"character-grid"});
-    CHARACTERS.forEach(function(c){
+    CHARACTERS.forEach(function(c, i){
       var btn = el("button", {type:"button", class:"character-btn" + (state.student.character===c?" selected":""), html:c});
+      btn.style.setProperty("--char-c", STEP_ACCENTS[i % STEP_ACCENTS.length]);
       btn.addEventListener("click", function(){
         state.student.character = c;
         save();
